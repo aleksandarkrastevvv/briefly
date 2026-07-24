@@ -69,6 +69,7 @@ button:disabled {
 .completion-state,
 .source-form,
 .operator-panel,
+.imported-section,
 .editorial-grid,
 .studio-layout {
   width: 100%;
@@ -154,7 +155,7 @@ button:disabled {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: var(--space-1);
   padding: var(--space-1);
   border: 1px solid var(--line);
@@ -354,6 +355,9 @@ input:focus-visible {
 .operator-panel,
 .operator-stat,
 .operator-run,
+.imported-section,
+.article-row,
+.log-row,
 .editorial-grid > section,
 .studio-layout,
 .source-row,
@@ -782,6 +786,72 @@ legend {
   font-weight: 800;
 }
 
+.imported-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.imported-layout {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.imported-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.article-list,
+.log-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.article-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, auto);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--page);
+}
+
+.article-row h3,
+.article-row p,
+.log-row h3,
+.log-row p,
+.empty-state {
+  margin-bottom: 0;
+}
+
+.article-row p:not(.eyebrow),
+.article-meta,
+.log-row p,
+.log-row small,
+.empty-state {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.article-meta {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: end;
+  text-align: right;
+  font-size: 0.86rem;
+}
+
+.log-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--page);
+}
+
 .editorial-grid {
   display: grid;
   gap: var(--space-3);
@@ -991,6 +1061,11 @@ legend {
     align-items: start;
   }
 
+  .imported-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.85fr);
+    align-items: start;
+  }
+
   .studio-output {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1011,7 +1086,7 @@ legend {
 
   .section-tabs {
     overflow-x: auto;
-    grid-template-columns: repeat(6, minmax(86px, 1fr));
+    grid-template-columns: repeat(7, minmax(86px, 1fr));
   }
 
   h1 {
@@ -1046,6 +1121,17 @@ legend {
 
   .source-dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .imported-dashboard,
+  .article-row,
+  .log-row {
+    grid-template-columns: 1fr;
+  }
+
+  .article-meta {
+    justify-items: start;
+    text-align: left;
   }
 
   .operator-grid {

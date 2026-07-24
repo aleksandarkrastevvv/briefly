@@ -16,7 +16,14 @@ import {
 } from "@/lib/briefly";
 import type { HomepageData } from "@/lib/supabase-data";
 
-type ViewName = "home" | "brief" | "sources" | "operator" | "editorial" | "studio";
+type ViewName =
+  | "home"
+  | "brief"
+  | "sources"
+  | "imported"
+  | "operator"
+  | "editorial"
+  | "studio";
 type SourceFilter = "all" | "official" | "needs-feed" | "active";
 
 type IngestionResult = {
@@ -208,6 +215,26 @@ export default function BrieflyApp({
     }),
     [homepageData.sources],
   );
+  const importedRows = useMemo(
+    () =>
+      homepageData.importedArticles.filter(
+        (article) => article.market === state.market,
+      ),
+    [homepageData.importedArticles, state.market],
+  );
+  const ingestionLogRows = useMemo(
+    () => homepageData.ingestionLogs.filter((log) => log.market === state.market),
+    [homepageData.ingestionLogs, state.market],
+  );
+  const importedStats = useMemo(
+    () => ({
+      articles: importedRows.length,
+      sources: new Set(importedRows.map((article) => article.sourceId)).size,
+      successfulRuns: ingestionLogRows.filter((log) => log.status === "success")
+        .length,
+    }),
+    [importedRows, ingestionLogRows],
+  );
 
   useEffect(() => {
     setState(loadStoredState());
@@ -336,6 +363,7 @@ export default function BrieflyApp({
     ["home", copy.tabHome],
     ["brief", copy.tabBrief],
     ["sources", copy.tabSources],
+    ["imported", "Imported"],
     ["operator", "Operator"],
     ["editorial", copy.tabEditorial],
     ["studio", copy.tabStudio],
@@ -672,6 +700,95 @@ export default function BrieflyApp({
                 <InfoList title={copy.architectureTitle} items={architectureNotes} />
                 <InfoList title={copy.decisionsTitle} items={setupDecisions} />
                 <InfoList title={copy.schemaTitle} items={schemaTables} />
+              </div>
+            </section>
+          )}
+
+          {view === "imported" && (
+            <section className="view is-active">
+              <div className="section-heading">
+                <p className="eyebrow">Review</p>
+                <h1>Imported articles</h1>
+                <p>Check the latest articles collected by ingestion.</p>
+              </div>
+
+              <section className="imported-dashboard" aria-label="Imported article summary">
+                <div className="source-stat">
+                  <strong>{importedStats.articles}</strong>
+                  <span>Articles</span>
+                </div>
+                <div className="source-stat">
+                  <strong>{importedStats.sources}</strong>
+                  <span>Sources</span>
+                </div>
+                <div className="source-stat">
+                  <strong>{importedStats.successfulRuns}</strong>
+                  <span>Successful runs</span>
+                </div>
+              </section>
+
+              <div className="imported-layout">
+                <section className="imported-section">
+                  <div className="operator-result-head">
+                    <h2>Latest articles</h2>
+                    <span>{homepageData.source}</span>
+                  </div>
+                  <div className="article-list">
+                    {importedRows.length === 0 && (
+                      <p className="empty-state">No imported articles yet.</p>
+                    )}
+                    {importedRows.map((article) => (
+                      <article className="article-row" key={article.id}>
+                        <div>
+                          <p className="eyebrow">{article.sourceName}</p>
+                          <h3>{article.title}</h3>
+                          {article.excerpt && <p>{article.excerpt}</p>}
+                        </div>
+                        <div className="article-meta">
+                          <span>{article.category ?? "uncategorized"}</span>
+                          <small>
+                            {formatTime(
+                              state.market,
+                              article.publicationDate ?? article.importedAt,
+                            )}
+                          </small>
+                          <a
+                            className="source-link"
+                            href={article.originalUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open
+                          </a>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="imported-section">
+                  <div className="operator-result-head">
+                    <h2>Ingestion logs</h2>
+                    <span>{ingestionLogRows.length} recent</span>
+                  </div>
+                  <div className="log-list">
+                    {ingestionLogRows.length === 0 && (
+                      <p className="empty-state">No ingestion logs yet.</p>
+                    )}
+                    {ingestionLogRows.map((log) => (
+                      <article className="log-row" key={log.id}>
+                        <div>
+                          <h3>{log.sourceName}</h3>
+                          <p>{log.error ?? log.status}</p>
+                        </div>
+                        <span className="status-pill">{log.status}</span>
+                        <small>
+                          {log.recordsFound} found · {log.recordsImported} imported
+                        </small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
               </div>
             </section>
           )}

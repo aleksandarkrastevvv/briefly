@@ -63,7 +63,28 @@ for (const source of data.sources) {
     `${source.name} cannot be active without a verified feed URL`
   );
   assert.notEqual(source.verificationStatus, "verified", `${source.name} is not verified yet`);
+  if (source.active) {
+    assert.equal(
+      source.verificationStatus,
+      "verified_feed",
+      `${source.name} must be a verified direct feed before activation`
+    );
+    assert.ok(
+      ["BTA", "BNT", "BBC World"].includes(source.name),
+      `${source.name} should not be in the first active source set`
+    );
+  }
 }
+
+const activeBulgarianSources = data.sources
+  .filter((source) => source.market === "BG" && source.active)
+  .map((source) => source.name)
+  .sort();
+assert.equal(
+  activeBulgarianSources.join(","),
+  "BBC World,BNT,BTA",
+  "Only the first verified Bulgarian RSS feeds should be active"
+);
 
 [
   "next",
@@ -87,6 +108,10 @@ for (const source of data.sources) {
   "Authorization",
   "source-filter",
   "source-dashboard",
+  "importedRows",
+  "Imported articles",
+  "article-list",
+  "ingestionLogRows",
   "operator-panel",
   "profileOptions.map",
   "navigator.share",
@@ -104,6 +129,10 @@ for (const source of data.sources) {
 
 [
   ".from(\"sources\")",
+  ".from(\"raw_articles\")",
+  ".from(\"ingestion_logs\")",
+  "importedArticles",
+  "ingestionLogs",
   "verification_status",
   "source: \"supabase\"",
   "source: \"seed\"",
@@ -178,6 +207,9 @@ assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingesti
   "('RS', 'sr-RS'",
   "https://www.bta.bg/bg/rss/free",
   "https://news.bnt.bg/bg/rss/news.xml",
+  "('BG', 'BTA', 'https://www.bta.bg', 'https://www.bta.bg/bg/rss/free', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed')",
+  "('BG', 'BNT', 'https://bntnews.bg', 'https://news.bnt.bg/bg/rss/news.xml', 'rss', 'Bulgarian', 'public_media', false, true, 'verified_feed')",
+  "('BG', 'BBC World', 'https://www.bbc.com/news/world', 'https://www.bbc.com/news/world/rss.xml', 'rss', 'English', 'world', false, true, 'verified_feed')",
   "verified_feed",
   "candidate_feed_blocked_403",
   "requires_verification",
