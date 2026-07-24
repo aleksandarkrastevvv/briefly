@@ -1,0 +1,78 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const assert = require("node:assert/strict");
+
+const root = path.resolve(__dirname, "..");
+const dataSource = fs.readFileSync(path.join(root, "data.js"), "utf8");
+const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const sql = fs.readFileSync(path.join(root, "database/001_foundation.sql"), "utf8");
+
+const sandbox = { window: {} };
+vm.runInNewContext(dataSource, sandbox);
+
+const data = sandbox.window.BrieflySeed;
+
+assert.equal(data.markets.length, 2, "Phase 1 should ship BG and RS markets");
+assert.equal(
+  data.markets.map((market) => market.code).join(","),
+  "BG,RS",
+  "Markets should stay configuration-driven"
+);
+
+for (const market of data.markets) {
+  const brief = data.dailyBriefs[market.code];
+  assert.ok(brief, `Missing daily brief for ${market.code}`);
+  assert.ok(
+    brief.stories.length >= 5 && brief.stories.length <= 8,
+    `${market.code} should have 5-8 stories`
+  );
+
+  for (const story of brief.stories) {
+    assert.equal(story.keyPoints.length, 3, `${story.id} should have 3 key points`);
+    assert.ok(
+      story.description.split(/\s+/).length <= 60,
+      `${story.id} description should be 60 words or fewer`
+    );
+    assert.ok(story.image && story.image.endsWith(".png"), `${story.id} needs a bitmap image`);
+    assert.ok(story.sources.length > 0, `${story.id} should preserve source names`);
+    assert.equal(story.sample, true, `${story.id} should be clearly marked as seed data`);
+  }
+}
+
+for (const source of data.sources) {
+  assert.ok(source.market, `${source.name} needs a market`);
+  assert.ok(source.name, "Source needs a name");
+  assert.equal(
+    source.active && !source.feedUrl,
+    false,
+    `${source.name} cannot be active without a verified feed URL`
+  );
+  assert.notEqual(source.verificationStatus, "verified", `${source.name} is not verified yet`);
+}
+
+[
+  "market-select",
+  "home-view",
+  "brief-view",
+  "sources-view",
+  "editorial-view",
+  "studio-view",
+  "story-card-template",
+].forEach((id) => {
+  assert.ok(html.includes(`id="${id}"`), `Missing #${id}`);
+});
+
+[
+  "create table if not exists markets",
+  "create table if not exists sources",
+  "create table if not exists raw_articles",
+  "create table if not exists story_clusters",
+  "create table if not exists daily_briefs",
+  "create table if not exists generated_social_content",
+  "alter table saved_stories enable row level security",
+].forEach((needle) => {
+  assert.ok(sql.includes(needle), `Migration missing: ${needle}`);
+});
+
+console.log("Phase 1 validation passed");

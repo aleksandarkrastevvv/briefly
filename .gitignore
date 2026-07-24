@@ -1,0 +1,12 @@
+.DS_Store
+.codex/
+.env
+.env.*
+node_modules/
+dist/
+build/
+.next/
+coverage/
+
+# Unrelated local note from the previous workspace.
+march-2026-corporate-subscription-requests-by-domain.md

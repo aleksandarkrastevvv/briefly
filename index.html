@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Briefly is a mobile-first daily briefing app for important public information."
+    />
+    <title>Briefly</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="splash" class="splash" aria-hidden="true">
+      <div class="splash-cloud">
+        <span>Politics</span>
+        <span>Economy</span>
+        <span>Technology</span>
+        <span>World</span>
+        <span>Business</span>
+        <span>Health</span>
+      </div>
+      <div class="splash-wordmark">Briefly</div>
+      <p>Everything important. Briefly.</p>
+    </div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand-button" type="button" data-view-target="home">
+          <span class="brand-mark" aria-hidden="true">B</span>
+          <span class="brand-copy">
+            <strong>Briefly</strong>
+            <span data-i18n="tagline">Всичко важно за деня. Накратко.</span>
+          </span>
+        </button>
+
+        <label class="market-switcher">
+          <span data-i18n="marketLabel">Пазар</span>
+          <select id="market-select" aria-label="Select market"></select>
+        </label>
+      </header>
+
+      <nav class="section-tabs" aria-label="Briefly sections">
+        <button class="tab is-active" type="button" data-view-target="home">
+          <span data-i18n="tabHome">Днес</span>
+        </button>
+        <button class="tab" type="button" data-view-target="brief">
+          <span data-i18n="tabBrief">Бриф</span>
+        </button>
+        <button class="tab" type="button" data-view-target="sources">
+          <span data-i18n="tabSources">Източници</span>
+        </button>
+        <button class="tab" type="button" data-view-target="editorial">
+          <span data-i18n="tabEditorial">Редакция</span>
+        </button>
+        <button class="tab" type="button" data-view-target="studio">
+          <span data-i18n="tabStudio">AI Studio</span>
+        </button>
+      </nav>
+
+      <main>
+        <section id="home-view" class="view is-active" data-view="home">
+          <div class="brief-hero">
+            <div>
+              <p id="date-line" class="quiet"></p>
+              <h1 id="greeting-line">Добро утро</h1>
+              <p id="brief-title" class="hero-subtitle">Ето най-важното за днес</p>
+            </div>
+
+            <div class="brief-summary" aria-live="polite">
+              <div>
+                <span id="story-count">6</span>
+                <small data-i18n="storiesLabel">истории</small>
+              </div>
+              <div>
+                <span id="time-estimate">5</span>
+                <small data-i18n="minutesLabel">минути</small>
+              </div>
+              <div>
+                <span id="progress-count">0</span>
+                <small data-i18n="completedLabel">завършени</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="home-actions">
+            <button id="start-brief" class="primary-action" type="button">
+              <span data-i18n="startBrief">Започни днешния бриф</span>
+            </button>
+            <button id="continue-brief" class="secondary-action" type="button">
+              <span data-i18n="continueBrief">Продължи</span>
+            </button>
+          </div>
+
+          <div class="progress-track" aria-label="Daily brief progress">
+            <span id="progress-bar"></span>
+          </div>
+
+          <section class="personal-card" aria-labelledby="personal-title">
+            <div>
+              <p class="eyebrow" data-i18n="personalEyebrow">За теб</p>
+              <h2 id="personal-title" data-i18n="personalTitle">
+                Направи Briefly по-полезен за теб
+              </h2>
+              <p data-i18n="personalCopy">
+                Избери няколко контекста за по-релевантни обяснения.
+              </p>
+            </div>
+            <button id="profile-toggle" class="text-action" type="button">
+              <span data-i18n="editProfile">Настрой</span>
+            </button>
+          </section>
+
+          <form id="profile-panel" class="profile-panel" hidden>
+            <fieldset>
+              <legend data-i18n="profileLegend">Моят контекст</legend>
+              <div id="profile-options" class="chip-grid"></div>
+            </fieldset>
+            <div class="form-actions">
+              <button class="secondary-action" type="button" id="delete-profile">
+                <span data-i18n="deleteProfile">Изтрий</span>
+              </button>
+              <button class="primary-action" type="submit">
+                <span data-i18n="saveProfile">Запази</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section id="brief-view" class="view" data-view="brief">
+          <div class="brief-toolbar">
+            <p id="brief-position" class="quiet">Story 1 of 6</p>
+            <div id="brief-dots" class="brief-dots" aria-label="Story progress"></div>
+          </div>
+
+          <div id="story-stage" class="story-stage" aria-live="polite"></div>
+
+          <div class="brief-controls">
+            <button id="previous-story" class="secondary-action" type="button">
+              <span data-i18n="previous">Предишна</span>
+            </button>
+            <button id="next-story" class="primary-action" type="button">
+              <span data-i18n="next">Следваща</span>
+            </button>
+          </div>
+
+          <section id="completion-state" class="completion-state" hidden>
+            <h2 data-i18n="completedTitle">Брифът е завършен</h2>
+            <p data-i18n="completedCopy">
+              Запази важните истории или започни отначало, когато искаш.
+            </p>
+            <button id="restart-brief" class="text-action" type="button">
+              <span data-i18n="restart">Започни отначало</span>
+            </button>
+          </section>
+        </section>
+
+        <section id="sources-view" class="view" data-view="sources">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="sourcesEyebrow">Източници</p>
+            <h1 data-i18n="sourcesTitle">Конфигурируеми записи</h1>
+          </div>
+          <form id="source-form" class="source-form">
+            <label>
+              <span data-i18n="sourceName">Име</span>
+              <input id="source-name" name="name" required />
+            </label>
+            <label>
+              <span>RSS URL</span>
+              <input id="source-feed" name="feedUrl" type="url" />
+            </label>
+            <label>
+              <span data-i18n="sourceCategory">Категория</span>
+              <input id="source-category" name="category" />
+            </label>
+            <button class="primary-action" type="submit">
+              <span data-i18n="addSource">Добави</span>
+            </button>
+          </form>
+          <div id="sources-list" class="source-list"></div>
+        </section>
+
+        <section id="editorial-view" class="view" data-view="editorial">
+          <div class="section-heading">
+            <p class="eyebrow">Phase 1</p>
+            <h1 data-i18n="editorialTitle">Редакционна основа</h1>
+          </div>
+          <div class="editorial-grid">
+            <section>
+              <h2 data-i18n="architectureTitle">Архитектура</h2>
+              <ul id="architecture-list" class="clean-list"></ul>
+            </section>
+            <section>
+              <h2 data-i18n="decisionsTitle">Нужни решения</h2>
+              <ul id="decision-list" class="clean-list"></ul>
+            </section>
+            <section>
+              <h2 data-i18n="schemaTitle">Данни</h2>
+              <ul id="schema-list" class="clean-list"></ul>
+            </section>
+          </div>
+        </section>
+
+        <section id="studio-view" class="view" data-view="studio">
+          <div class="section-heading">
+            <p class="eyebrow">AI Studio</p>
+            <h1 data-i18n="studioTitle">Социално съдържание</h1>
+          </div>
+          <div class="studio-layout">
+            <label>
+              <span data-i18n="selectStory">История</span>
+              <select id="studio-story"></select>
+            </label>
+            <div id="studio-output" class="studio-output"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="story-card-template">
+      <article class="story-card">
+        <div class="story-image">
+          <img class="story-img" alt="" />
+          <span class="story-badge"></span>
+        </div>
+        <div class="story-body">
+          <div class="story-meta">
+            <span class="story-category"></span>
+            <span class="story-updated"></span>
+          </div>
+          <h2 class="story-headline"></h2>
+          <p class="story-description"></p>
+          <ul class="key-points"></ul>
+          <section>
+            <h3 data-i18n="whyItMatters">Защо е важно</h3>
+            <p class="why-it-matters"></p>
+          </section>
+          <div class="story-footer">
+            <p class="source-line"></p>
+            <div class="story-actions">
+              <button class="icon-action save-story" type="button">Save</button>
+              <button class="icon-action share-story" type="button">Share</button>
+              <button class="text-action open-story" type="button">
+                <span data-i18n="openFull">Отвори</span>
+              </button>
+            </div>
+          </div>
+          <section class="full-story" hidden></section>
+        </div>
+      </article>
+    </template>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
