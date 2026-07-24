@@ -15,6 +15,17 @@ export type ParsedFeedItem = {
   guid: string | null;
 };
 
+const trackingParams = new Set([
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "utm_id",
+  "fbclid",
+  "gclid",
+]);
+
 export type PlannedIngestionRun = {
   sourceId: string;
   sourceName: string;
@@ -57,6 +68,43 @@ export function parseFeedItems(xml: string): ParsedFeedItem[] {
   return matchBlocks(xml, "entry").map(parseAtomEntry);
 }
 
+export function normalizeFeedItem(
+  item: ParsedFeedItem,
+  sourceCategory: string,
+): ParsedFeedItem {
+  const title = cleanText(item.title);
+  const originalUrl = normalizeUrl(item.originalUrl);
+  const excerpt = cleanText(item.excerpt);
+  const author = cleanText(item.author);
+  const category = normalizeCategory(item.category) ?? normalizeCategory(sourceCategory);
+  const guid = cleanText(item.guid);
+
+  return {
+    title: title || "Untitled",
+    originalUrl,
+    publicationDate: normalizeDate(item.publicationDate),
+    excerpt,
+    author,
+    category,
+    guid,
+  };
+}
+
+export function dedupeFeedItems(items: ParsedFeedItem[]): ParsedFeedItem[] {
+  const seen = new Set<string>();
+  const uniqueItems: ParsedFeedItem[] = [];
+
+  for (const item of items) {
+    const key = item.originalUrl || item.guid || item.title;
+    if (!key || seen.has(key)) continue;
+
+    seen.add(key);
+    uniqueItems.push(item);
+  }
+
+  return uniqueItems;
+}
+
 export function toRawArticleInsert(
   source: Pick<SourceRow, "id" | "market_code" | "category">,
   item: ParsedFeedItem,
@@ -64,13 +112,13 @@ export function toRawArticleInsert(
   return {
     market_code: source.market_code,
     source_id: source.id,
-    title: item.title,
-    original_url: item.originalUrl,
+    title: cleanText(item.title) || "Untitled",
+    original_url: normalizeUrl(item.originalUrl),
     publication_date: item.publicationDate,
-    excerpt: item.excerpt,
-    author: item.author,
-    category: item.category ?? source.category,
-    guid: item.guid,
+    excerpt: cleanText(item.excerpt),
+    author: cleanText(item.author),
+    category: normalizeCategory(item.category) ?? normalizeCategory(source.category),
+    guid: cleanText(item.guid),
   };
 }
 
@@ -115,9 +163,9 @@ function readTag(xml: string, tagName: string): string | null {
   const value = readBlock(xml, tagName);
   if (!value) return null;
 
-  return decodeXml(value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, ""))
-    .replace(/\s+/g, " ")
-    .trim();
+  return cleanText(
+    decodeXml(value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, "")),
+  );
 }
 
 function readAtomLink(xml: string): string | null {
@@ -138,6 +186,45 @@ function normalizeDate(value: string | null): string | null {
   if (Number.isNaN(date.getTime())) return null;
 
   return date.toISOString();
+}
+
+function normalizeUrl(value: string): string {
+  const trimmed = cleanText(value) ?? "";
+  if (!trimmed) return "";
+
+  try {
+    const url = new URL(trimmed);
+    url.hash = "";
+
+    for (const param of [...url.searchParams.keys()]) {
+      if (trackingParams.has(param.toLowerCase())) {
+        url.searchParams.delete(param);
+      }
+    }
+
+    url.hostname = url.hostname.toLowerCase();
+    return url.toString();
+  } catch {
+    return trimmed;
+  }
+}
+
+function normalizeCategory(value: string | null): string | null {
+  const cleaned = cleanText(value);
+  if (!cleaned) return null;
+
+  return cleaned.toLowerCase().replace(/[^a-z0-9а-яё]+/gi, "_").replace(/^_+|_+$/g, "");
+}
+
+function cleanText(value: string | null): string | null {
+  if (!value) return null;
+
+  const cleaned = decodeXml(value)
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return cleaned || null;
 }
 
 function decodeXml(value: string): string {
