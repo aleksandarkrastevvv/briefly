@@ -143,6 +143,10 @@ assert.equal(
 [
   "planRssIngestion",
   "parseFeedItems",
+  "normalizeFeedItem",
+  "dedupeFeedItems",
+  "normalizeUrl",
+  "trackingParams",
   "toRawArticleInsert",
   "verification_status !== \"verified_feed\"",
 ].forEach((needle) => {
@@ -152,6 +156,8 @@ assert.equal(
 [
   "INGESTION_API_TOKEN",
   "createAdminSupabaseClient",
+  "normalizeFeedItem(item, run.sourceCategory)",
+  "dedupeFeedItems",
   "writeTo(supabase, \"raw_articles\")",
   "writeTo(supabase, \"ingestion_logs\")",
   "readBearerToken",
@@ -161,6 +167,8 @@ assert.equal(
 
 [
   "RSS Ingestion Skeleton",
+  "Article Normalization",
+  "removing common tracking parameters",
   "active = true",
   "Operator Control",
   "POST /api/ingestion/rss",

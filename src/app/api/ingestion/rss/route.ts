@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import {
+  dedupeFeedItems,
+  normalizeFeedItem,
   parseFeedItems,
   planRssIngestion,
   toRawArticleInsert,
@@ -54,7 +56,11 @@ export async function POST(request: Request) {
 
     try {
       const xml = await fetchWithTimeout(run.feedUrl);
-      const parsedItems = parseFeedItems(xml)
+      const parsedItems = dedupeFeedItems(
+        parseFeedItems(xml).map((item) =>
+          normalizeFeedItem(item, run.sourceCategory),
+        ),
+      )
         .filter((item) => item.title && item.originalUrl)
         .slice(0, maxItemsPerSource);
 

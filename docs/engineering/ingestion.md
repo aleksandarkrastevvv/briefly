@@ -22,6 +22,20 @@ It does three things only:
 2. Parses basic RSS or Atom metadata from feed XML.
 3. Normalizes parsed feed items into `raw_articles` insert records.
 
+## Article Normalization
+
+Before records are saved, ingestion normalizes:
+
+- title and excerpt whitespace
+- XML entities
+- publication dates into ISO timestamps when possible
+- category labels into stable lowercase identifiers
+- original URLs by removing common tracking parameters
+- duplicate feed items within the same run
+
+This keeps `raw_articles` predictable enough for review, clustering, and later
+AI summarization.
+
 It does not yet:
 
 - run on a schedule
@@ -83,7 +97,7 @@ The route:
 
 1. Loads eligible sources from Supabase.
 2. Fetches each feed with a short timeout.
-3. Parses feed items.
+3. Parses, normalizes, and deduplicates feed items.
 4. Upserts `raw_articles` by `(source_id, original_url)` or `(source_id, guid)`.
 5. Writes one `ingestion_logs` row for each source run.
 
