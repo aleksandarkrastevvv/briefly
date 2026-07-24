@@ -10,6 +10,7 @@ const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "
 const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
 const sql = fs.readFileSync(path.join(root, "database/001_foundation.sql"), "utf8");
 
 const sandbox = {};
@@ -112,5 +113,9 @@ for (const source of data.sources) {
 ].forEach((needle) => {
   assert.ok(seedSql.includes(needle), `Seed SQL missing: ${needle}`);
 });
+
+assert.equal(vercelConfig.framework, "nextjs", "Vercel should use Next.js");
+assert.equal(vercelConfig.installCommand, "pnpm install", "Vercel install command should use pnpm");
+assert.equal(vercelConfig.buildCommand, "pnpm build", "Vercel build command should use pnpm");
 
 console.log("Phase 1 validation passed");

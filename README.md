@@ -4,6 +4,8 @@ Briefly is a mobile-first daily briefing app for important public information.
 
 Briefly is following Option B: Codex is the main builder, GitHub is the source of truth, Supabase is the backend, and the public app will live at `https://everything-important-briefly.today`.
 
+Hosting provider: Vercel.
+
 Start with [`docs/project-index.md`](/Users/aleksandar.krastev/Documents/New%20project/docs/project-index.md).
 
 Phase 1 started as a static application and is now being converted into a Next.js production app on `develop`. The preserved static prototype lives in [`prototype/static-phase-1`](/Users/aleksandar.krastev/Documents/New%20project/prototype/static-phase-1). The target production architecture is documented in [`docs/engineering/architecture.md`](/Users/aleksandar.krastev/Documents/New%20project/docs/engineering/architecture.md), and the Supabase schema foundation lives in [`database/001_foundation.sql`](/Users/aleksandar.krastev/Documents/New%20project/database/001_foundation.sql).

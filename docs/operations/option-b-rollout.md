@@ -52,16 +52,15 @@ Instead:
 
 ## Step 4: Choose Hosting
 
-Recommended hosting path:
+Chosen hosting path:
 
-- Vercel for fastest Next.js deployment, or
-- Cloudflare Pages/Workers for edge-first deployment.
+- Vercel for fastest Next.js deployment.
 
 Your production domain:
 
 `https://everything-important-briefly.today`
 
-Point the domain to the chosen hosting provider after the first deploy is healthy.
+Point the domain to Vercel after the first deploy is healthy.
 
 ## Step 5: Create Supabase Project
 
@@ -131,5 +130,5 @@ Every release needs:
    - Testing
    - Done
 4. Create Supabase project.
-5. Decide hosting provider.
+5. Set up Vercel project.
 6. Begin framework conversion.

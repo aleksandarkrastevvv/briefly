@@ -14,6 +14,7 @@ Briefly is now following Option B:
 - Engineering architecture: `docs/engineering/architecture.md`
 - Database: `docs/engineering/database.md`
 - Supabase setup: `docs/operations/supabase-setup.md`
+- Vercel setup: `docs/operations/vercel-setup.md`
 - AI pipeline: `docs/ai/ai-pipeline.md`
 - Testing plan: `docs/testing/test-plan.md`
 - Release process: `docs/operations/release-process.md`
