@@ -73,7 +73,10 @@ for (const source of data.sources) {
 [
   "function StoryCard",
   "function StudioOutput",
-  "sourceRows.map",
+  "filteredSourceRows.map",
+  "sourceStats",
+  "source-filter",
+  "source-dashboard",
   "profileOptions.map",
   "navigator.share",
 ].forEach((needle) => {

@@ -17,6 +17,7 @@ import {
 import type { HomepageData } from "@/lib/supabase-data";
 
 type ViewName = "home" | "brief" | "sources" | "editorial" | "studio";
+type SourceFilter = "all" | "official" | "needs-feed" | "active";
 
 type AppState = {
   market: MarketCode;
@@ -122,6 +123,7 @@ export default function BrieflyApp({
   const [profileOpen, setProfileOpen] = useState(false);
   const [openStoryId, setOpenStoryId] = useState<string | null>(null);
   const [studioStoryId, setStudioStoryId] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [showSplash, setShowSplash] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -148,6 +150,36 @@ export default function BrieflyApp({
       ),
     [homepageData.sources, state.market],
   );
+  const filteredSourceRows = useMemo(() => {
+    if (sourceFilter === "official") {
+      return sourceRows.filter((source) => source.official);
+    }
+
+    if (sourceFilter === "needs-feed") {
+      return sourceRows.filter((source) => !source.feedUrl);
+    }
+
+    if (sourceFilter === "active") {
+      return sourceRows.filter((source) => source.active);
+    }
+
+    return sourceRows;
+  }, [sourceFilter, sourceRows]);
+  const sourceStats = useMemo(
+    () => ({
+      total: sourceRows.length,
+      official: sourceRows.filter((source) => source.official).length,
+      active: sourceRows.filter((source) => source.active).length,
+      needsFeed: sourceRows.filter((source) => !source.feedUrl).length,
+    }),
+    [sourceRows],
+  );
+  const sourceFilters: Array<[SourceFilter, string, number]> = [
+    ["all", "All", sourceStats.total],
+    ["official", "Official", sourceStats.official],
+    ["needs-feed", "Needs feed", sourceStats.needsFeed],
+    ["active", "Active", sourceStats.active],
+  ];
 
   useEffect(() => {
     setState(loadStoredState());
@@ -489,9 +521,51 @@ export default function BrieflyApp({
               <div className="section-heading">
                 <p className="eyebrow">{copy.sourcesEyebrow}</p>
                 <h1>{copy.sourcesTitle}</h1>
+                <p>
+                  Manage the sources that Briefly can use for this market. Data is
+                  loaded from {homepageData.source === "supabase" ? "Supabase" : "seed data"}.
+                </p>
               </div>
+
+              <section className="source-dashboard" aria-label="Source management">
+                <div className="source-stat">
+                  <strong>{sourceStats.total}</strong>
+                  <span>Total sources</span>
+                </div>
+                <div className="source-stat">
+                  <strong>{sourceStats.official}</strong>
+                  <span>Official</span>
+                </div>
+                <div className="source-stat">
+                  <strong>{sourceStats.needsFeed}</strong>
+                  <span>Need feed check</span>
+                </div>
+                <div className="source-stat">
+                  <strong>{sourceStats.active}</strong>
+                  <span>Active</span>
+                </div>
+              </section>
+
+              <div className="source-controls" aria-label="Source filters">
+                {sourceFilters.map(([filter, label, count]) => (
+                  <button
+                    key={filter}
+                    className={
+                      sourceFilter === filter
+                        ? "source-filter is-active"
+                        : "source-filter"
+                    }
+                    type="button"
+                    onClick={() => setSourceFilter(filter)}
+                  >
+                    <span>{label}</span>
+                    <strong>{count}</strong>
+                  </button>
+                ))}
+              </div>
+
               <div className="source-list">
-                {sourceRows.map((source) => (
+                {filteredSourceRows.map((source) => (
                   <article className="source-row" key={`${source.market}-${source.name}`}>
                     <div>
                       <h2>{source.name}</h2>
@@ -502,11 +576,19 @@ export default function BrieflyApp({
                           : ""}
                       </p>
                     </div>
-                    <div>
+                    <div className="source-status">
                       <strong>{source.active ? copy.active : copy.inactive}</strong>
                       <span>{source.feedUrl ?? copy.noFeed}</span>
                       <small>{source.verificationStatus}</small>
                     </div>
+                    <a
+                      className="source-link"
+                      href={source.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Review
+                    </a>
                   </article>
                 ))}
               </div>
