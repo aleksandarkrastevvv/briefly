@@ -19,6 +19,7 @@ export type PlannedIngestionRun = {
   sourceId: string;
   sourceName: string;
   marketCode: string;
+  sourceCategory: string;
   feedUrl: string;
   feedKind: FeedKind;
 };
@@ -42,6 +43,7 @@ export function planRssIngestion(sources: SourceRow[]): PlannedIngestionRun[] {
       sourceId: source.id,
       sourceName: source.name,
       marketCode: source.market_code,
+      sourceCategory: source.category,
       feedUrl: source.feed_or_page_url,
       feedKind,
     };

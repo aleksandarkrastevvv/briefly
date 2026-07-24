@@ -25,8 +25,7 @@ It does three things only:
 It does not yet:
 
 - run on a schedule
-- activate sources
-- write to Supabase
+- activate sources automatically
 - scrape article bodies
 - call AI models
 
@@ -65,12 +64,30 @@ until a parser or access strategy is reviewed.
 - Log every ingestion run.
 - Preserve source attribution.
 
-## Next Implementation Step
+## Protected Manual Endpoint
 
-Add a protected server route or scheduled job that:
+The protected manual route is:
+
+```text
+POST /api/ingestion/rss
+Authorization: Bearer <INGESTION_API_TOKEN>
+```
+
+Required production environment variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `INGESTION_API_TOKEN`
+
+The route:
 
 1. Loads eligible sources from Supabase.
 2. Fetches each feed with a short timeout.
 3. Parses feed items.
 4. Upserts `raw_articles` by `(source_id, original_url)` or `(source_id, guid)`.
 5. Writes one `ingestion_logs` row for each source run.
+
+## Next Implementation Step
+
+Add a small operator UI or scheduled job that can call the protected endpoint
+without exposing secrets to readers.

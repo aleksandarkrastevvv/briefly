@@ -11,7 +11,9 @@ const supabaseDataSource = fs.readFileSync(path.join(root, "src/lib/supabase-dat
 const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
 const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
 const rssIngestionSource = fs.readFileSync(path.join(root, "src/lib/ingestion/rss.ts"), "utf8");
+const rssIngestionRoute = fs.readFileSync(path.join(root, "src/app/api/ingestion/rss/route.ts"), "utf8");
 const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
+const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
@@ -112,12 +114,25 @@ for (const source of data.sources) {
 });
 
 [
+  "INGESTION_API_TOKEN",
+  "createAdminSupabaseClient",
+  "writeTo(supabase, \"raw_articles\")",
+  "writeTo(supabase, \"ingestion_logs\")",
+  "readBearerToken",
+].forEach((needle) => {
+  assert.ok(rssIngestionRoute.includes(needle), `RSS ingestion route missing: ${needle}`);
+});
+
+[
   "RSS Ingestion Skeleton",
   "active = true",
+  "POST /api/ingestion/rss",
   "Writes one `ingestion_logs` row",
 ].forEach((needle) => {
   assert.ok(ingestionDoc.includes(needle), `Ingestion plan missing: ${needle}`);
 });
+
+assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingestion token");
 
 [
   "create table if not exists markets",
