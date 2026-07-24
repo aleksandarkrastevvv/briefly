@@ -3,10 +3,13 @@
 .env
 .env.*
 node_modules/
+.pnpm-store/
 dist/
 build/
 .next/
+.vercel/
 coverage/
+tsconfig.tsbuildinfo
 
 # Unrelated local note from the previous workspace.
 march-2026-corporate-subscription-requests-by-domain.md

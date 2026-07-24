@@ -6,7 +6,7 @@ Briefly is following Option B: Codex is the main builder, GitHub is the source o
 
 Start with [`docs/project-index.md`](/Users/aleksandar.krastev/Documents/New%20project/docs/project-index.md).
 
-Phase 1 is implemented as a local static application so it runs in this workspace without installing a framework. The target production architecture is documented in [`docs/engineering/architecture.md`](/Users/aleksandar.krastev/Documents/New%20project/docs/engineering/architecture.md), and the Supabase schema foundation lives in [`database/001_foundation.sql`](/Users/aleksandar.krastev/Documents/New%20project/database/001_foundation.sql).
+Phase 1 started as a static application and is now being converted into a Next.js production app on `develop`. The preserved static prototype lives in [`prototype/static-phase-1`](/Users/aleksandar.krastev/Documents/New%20project/prototype/static-phase-1). The target production architecture is documented in [`docs/engineering/architecture.md`](/Users/aleksandar.krastev/Documents/New%20project/docs/engineering/architecture.md), and the Supabase schema foundation lives in [`database/001_foundation.sql`](/Users/aleksandar.krastev/Documents/New%20project/database/001_foundation.sql).
 
 ## What Works
 
@@ -28,7 +28,14 @@ Phase 1 is implemented as a local static application so it runs in this workspac
 
 ## Open Locally
 
-Open [`index.html`](/Users/aleksandar.krastev/Documents/New%20project/index.html) in a browser.
+For the legacy static prototype, open [`prototype/static-phase-1/index.html`](/Users/aleksandar.krastev/Documents/New%20project/prototype/static-phase-1/index.html) in a browser.
+
+For the Next.js app:
+
+```bash
+pnpm install
+pnpm dev
+```
 
 ## Validate
 
@@ -36,7 +43,7 @@ Use the bundled Node runtime:
 
 ```bash
 /Users/aleksandar.krastev/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check app.js
-/Users/aleksandar.krastev/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node tests/phase1.test.js
+/Users/aleksandar.krastev/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node tests/phase1.test.cjs
 ```
 
 ## Decisions Needed
