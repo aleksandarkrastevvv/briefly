@@ -108,6 +108,10 @@ assert.equal(
   "Authorization",
   "source-filter",
   "source-dashboard",
+  "importedRows",
+  "Imported articles",
+  "article-list",
+  "ingestionLogRows",
   "operator-panel",
   "profileOptions.map",
   "navigator.share",
@@ -125,6 +129,10 @@ assert.equal(
 
 [
   ".from(\"sources\")",
+  ".from(\"raw_articles\")",
+  ".from(\"ingestion_logs\")",
+  "importedArticles",
+  "ingestionLogs",
   "verification_status",
   "source: \"supabase\"",
   "source: \"seed\"",
