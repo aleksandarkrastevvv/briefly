@@ -151,6 +151,29 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["daily_briefs"]["Insert"]>;
       };
+      ingestion_logs: {
+        Row: {
+          id: string;
+          market_code: string;
+          source_id: string | null;
+          status: string;
+          records_found: number;
+          records_imported: number;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          market_code: string;
+          source_id?: string | null;
+          status: string;
+          records_found?: number;
+          records_imported?: number;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["ingestion_logs"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

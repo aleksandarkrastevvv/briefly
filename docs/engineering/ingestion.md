@@ -12,6 +12,36 @@
 
 Prioritise RSS. Do not scrape full article content when RSS metadata is enough.
 
+## RSS Ingestion Skeleton
+
+The first code layer lives in `src/lib/ingestion/rss.ts`.
+
+It does three things only:
+
+1. Plans eligible ingestion runs from configured source rows.
+2. Parses basic RSS or Atom metadata from feed XML.
+3. Normalizes parsed feed items into `raw_articles` insert records.
+
+It does not yet:
+
+- run on a schedule
+- activate sources
+- write to Supabase
+- scrape article bodies
+- call AI models
+
+## Eligibility Rule
+
+A source can enter the RSS ingestion plan only when:
+
+- `active = true`
+- `feed_or_page_url` is present
+- `source_type` is `rss`, `atom` or `xml`
+- `verification_status = verified_feed`
+
+This keeps official page candidates and blocked feeds out of automatic ingestion
+until a parser or access strategy is reviewed.
+
 ## Source Record Fields
 
 - market
@@ -34,3 +64,13 @@ Prioritise RSS. Do not scrape full article content when RSS metadata is enough.
 - Keep inactive sources inactive until verified.
 - Log every ingestion run.
 - Preserve source attribution.
+
+## Next Implementation Step
+
+Add a protected server route or scheduled job that:
+
+1. Loads eligible sources from Supabase.
+2. Fetches each feed with a short timeout.
+3. Parses feed items.
+4. Upserts `raw_articles` by `(source_id, original_url)` or `(source_id, guid)`.
+5. Writes one `ingestion_logs` row for each source run.

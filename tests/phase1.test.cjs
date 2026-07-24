@@ -10,6 +10,8 @@ const appSource = fs.readFileSync(path.join(root, "src/app/briefly-app.tsx"), "u
 const supabaseDataSource = fs.readFileSync(path.join(root, "src/lib/supabase-data.ts"), "utf8");
 const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
 const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
+const rssIngestionSource = fs.readFileSync(path.join(root, "src/lib/ingestion/rss.ts"), "utf8");
+const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
@@ -101,11 +103,29 @@ for (const source of data.sources) {
 });
 
 [
+  "planRssIngestion",
+  "parseFeedItems",
+  "toRawArticleInsert",
+  "verification_status !== \"verified_feed\"",
+].forEach((needle) => {
+  assert.ok(rssIngestionSource.includes(needle), `RSS ingestion skeleton missing: ${needle}`);
+});
+
+[
+  "RSS Ingestion Skeleton",
+  "active = true",
+  "Writes one `ingestion_logs` row",
+].forEach((needle) => {
+  assert.ok(ingestionDoc.includes(needle), `Ingestion plan missing: ${needle}`);
+});
+
+[
   "create table if not exists markets",
   "create table if not exists sources",
   "create table if not exists raw_articles",
   "create table if not exists story_clusters",
   "create table if not exists daily_briefs",
+  "create table if not exists ingestion_logs",
   "create table if not exists generated_social_content",
   "alter table saved_stories enable row level security",
 ].forEach((needle) => {
