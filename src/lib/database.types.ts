@@ -134,6 +134,17 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["story_clusters"]["Insert"]>;
       };
+      story_sources: {
+        Row: {
+          story_cluster_id: string;
+          raw_article_id: string;
+        };
+        Insert: {
+          story_cluster_id: string;
+          raw_article_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["story_sources"]["Insert"]>;
+      };
       daily_briefs: {
         Row: RowWithId & {
           market_code: string;

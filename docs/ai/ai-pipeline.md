@@ -87,15 +87,49 @@ Generated drafts map to existing tables:
 - `ranking_logs` can store later daily ranking request/response metadata.
 - `daily_briefs` and `daily_brief_stories` are used only after editorial approval.
 
-## First Implementation Step
+## Protected Manual Endpoint
 
-Add a protected manual endpoint that:
+The first protected story generation route is:
 
-1. Loads story generation candidates for one market.
-2. Calls OpenAI with the strict story schema.
-3. Saves draft story clusters and source links.
-4. Returns generated draft counts and any validation errors.
+```text
+POST /api/ai/stories
+Authorization: Bearer <INGESTION_API_TOKEN>
+```
 
-Required environment variable:
+Optional JSON body:
+
+```json
+{ "marketCode": "BG" }
+```
+
+The endpoint:
+
+1. Loads recent eligible `raw_articles` for the market.
+2. Builds a grounded story-generation prompt.
+3. Calls OpenAI through the Responses API.
+4. Validates the structured response.
+5. Saves generated stories to `story_clusters` with `editorial_status = draft`.
+6. Links each draft to source articles through `story_sources`.
+7. Returns generated draft counts.
+
+Required environment variables:
 
 - `OPENAI_API_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `INGESTION_API_TOKEN`
+
+Optional environment variable:
+
+- `STORY_GENERATION_MODEL`
+
+Default model:
+
+- `gpt-5-mini`
+
+## Next Implementation Step
+
+Add an operator control and editorial review view that:
+
+1. Runs the protected story generation endpoint.
+2. Shows generated story drafts.
+3. Lets an editor approve, edit, reject, or regenerate drafts.
