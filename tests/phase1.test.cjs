@@ -132,6 +132,10 @@ for (const source of data.sources) {
   "insert into markets",
   "('BG', 'bg-BG'",
   "('RS', 'sr-RS'",
+  "https://www.bta.bg/bg/rss/free",
+  "https://news.bnt.bg/bg/rss/news.xml",
+  "verified_feed",
+  "candidate_feed_blocked_403",
   "requires_verification",
 ].forEach((needle) => {
   assert.ok(seedSql.includes(needle), `Seed SQL missing: ${needle}`);

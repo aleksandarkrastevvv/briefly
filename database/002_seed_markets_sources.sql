@@ -1,5 +1,6 @@
 -- Seed configuration for Briefly markets and initial source records.
--- Feed URLs stay null and sources stay inactive until each source is verified.
+-- Sources stay inactive until ingestion parsers are implemented and reviewed.
+-- Verification statuses reflect feed/page checks from 2026-07-24.
 
 insert into markets (code, locale, language, default_script, timezone, active)
 values
@@ -25,15 +26,15 @@ insert into sources (
   verification_status
 )
 values
-  ('BG', 'BTA', 'https://www.bta.bg', null, 'rss', 'Bulgarian', 'general', false, false, 'requires_verification'),
-  ('BG', 'Capital', 'https://www.capital.bg', null, 'rss', 'Bulgarian', 'business', false, false, 'requires_verification'),
-  ('BG', 'Dnevnik', 'https://www.dnevnik.bg', null, 'rss', 'Bulgarian', 'general', false, false, 'requires_verification'),
-  ('BG', 'BNT', 'https://bntnews.bg', null, 'rss', 'Bulgarian', 'public_media', false, false, 'requires_verification'),
-  ('BG', 'BBC World', 'https://www.bbc.com/news/world', null, 'rss', 'English', 'world', false, false, 'requires_verification'),
-  ('BG', 'National Assembly', 'https://www.parliament.bg', null, 'official', 'Bulgarian', 'government', true, false, 'requires_verification'),
-  ('BG', 'Council of Ministers', 'https://www.gov.bg', null, 'official', 'Bulgarian', 'government', true, false, 'requires_verification'),
-  ('BG', 'National Revenue Agency', 'https://nra.bg', null, 'official', 'Bulgarian', 'government', true, false, 'requires_verification'),
-  ('BG', 'Bulgarian National Bank', 'https://www.bnb.bg', null, 'official', 'Bulgarian', 'government', true, false, 'requires_verification'),
+  ('BG', 'BTA', 'https://www.bta.bg', 'https://www.bta.bg/bg/rss/free', 'rss', 'Bulgarian', 'general', false, false, 'verified_feed'),
+  ('BG', 'Capital', 'https://www.capital.bg', null, 'rss', 'Bulgarian', 'business', false, false, 'candidate_feed_blocked_403'),
+  ('BG', 'Dnevnik', 'https://www.dnevnik.bg', null, 'rss', 'Bulgarian', 'general', false, false, 'candidate_feed_blocked_402'),
+  ('BG', 'BNT', 'https://bntnews.bg', 'https://news.bnt.bg/bg/rss/news.xml', 'rss', 'Bulgarian', 'public_media', false, false, 'verified_feed'),
+  ('BG', 'BBC World', 'https://www.bbc.com/news/world', 'https://www.bbc.com/news/world/rss.xml', 'rss', 'English', 'world', false, false, 'verified_feed'),
+  ('BG', 'National Assembly', 'https://www.parliament.bg', 'https://www.parliament.bg/bg/rss', 'official', 'Bulgarian', 'government', true, false, 'verified_rss_index'),
+  ('BG', 'Council of Ministers', 'https://www.gov.bg', 'https://www.gov.bg/bg/prestsentar/novini', 'official', 'Bulgarian', 'government', true, false, 'verified_page'),
+  ('BG', 'National Revenue Agency', 'https://nra.bg', 'https://nra.bg/wps/portal/nra/actualno', 'official', 'Bulgarian', 'government', true, false, 'verified_page'),
+  ('BG', 'Bulgarian National Bank', 'https://www.bnb.bg', 'https://www.bnb.bg/AboutUs/PressOffice/PORSS/index.htm', 'official', 'Bulgarian', 'government', true, false, 'verified_rss_index'),
   ('RS', 'Tanjug', 'https://www.tanjug.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
   ('RS', 'RTS', 'https://www.rts.rs', null, 'rss', 'Serbian', 'public_media', false, false, 'requires_verification'),
   ('RS', 'B92', 'https://www.b92.net', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
