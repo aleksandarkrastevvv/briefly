@@ -2,8 +2,10 @@
 
 Last checked: 2026-07-24
 
-This note records the first Bulgarian source verification pass. Sources remain
-inactive until ingestion parsers are implemented and reviewed.
+This note records the first Bulgarian source verification pass. Direct verified
+RSS feeds are active for the first ingestion run. Blocked feeds, index pages,
+and plain news pages remain inactive until a parser or access strategy is
+reviewed.
 
 | Source | Result | Feed or page |
 | --- | --- | --- |
@@ -17,8 +19,17 @@ inactive until ingestion parsers are implemented and reviewed.
 | National Revenue Agency | Verified official news page candidate | https://nra.bg/wps/portal/nra/actualno |
 | Bulgarian National Bank | Verified official RSS index page | https://www.bnb.bg/AboutUs/PressOffice/PORSS/index.htm |
 
+## Active First Run Sources
+
+- BTA
+- BNT
+- BBC World
+
+These are direct RSS/XML feeds with `verification_status = verified_feed`.
+
 ## Follow-up
 
 - Recheck Capital and Dnevnik with a browser-like request during ingestion work.
 - Parse National Assembly and BNB RSS index pages before choosing a final feed.
-- Keep all sources inactive until the ingestion pipeline can log imports and errors.
+- Keep blocked, index-page, and official page candidates inactive until the
+  ingestion pipeline can parse them intentionally and log source-specific errors.
