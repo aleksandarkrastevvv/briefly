@@ -79,8 +79,15 @@ for (const source of data.sources) {
   "function StudioOutput",
   "filteredSourceRows.map",
   "sourceStats",
+  "runIngestion",
+  "ingestionToken",
+  "Run RSS ingestion",
+  "type=\"password\"",
+  "/api/ingestion/rss",
+  "Authorization",
   "source-filter",
   "source-dashboard",
+  "operator-panel",
   "profileOptions.map",
   "navigator.share",
 ].forEach((needle) => {
@@ -126,8 +133,10 @@ for (const source of data.sources) {
 [
   "RSS Ingestion Skeleton",
   "active = true",
+  "Operator Control",
   "POST /api/ingestion/rss",
   "Writes one `ingestion_logs` row",
+  "not saved",
 ].forEach((needle) => {
   assert.ok(ingestionDoc.includes(needle), `Ingestion plan missing: ${needle}`);
 });

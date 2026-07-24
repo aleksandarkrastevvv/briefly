@@ -16,8 +16,19 @@ import {
 } from "@/lib/briefly";
 import type { HomepageData } from "@/lib/supabase-data";
 
-type ViewName = "home" | "brief" | "sources" | "editorial" | "studio";
+type ViewName = "home" | "brief" | "sources" | "operator" | "editorial" | "studio";
 type SourceFilter = "all" | "official" | "needs-feed" | "active";
+
+type IngestionResult = {
+  plannedSources: number;
+  results: Array<{
+    source: string;
+    status: string;
+    recordsFound?: number;
+    recordsImported?: number;
+    error?: string;
+  }>;
+};
 
 type AppState = {
   market: MarketCode;
@@ -124,6 +135,10 @@ export default function BrieflyApp({
   const [openStoryId, setOpenStoryId] = useState<string | null>(null);
   const [studioStoryId, setStudioStoryId] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [ingestionToken, setIngestionToken] = useState("");
+  const [ingestionRunning, setIngestionRunning] = useState(false);
+  const [ingestionResult, setIngestionResult] = useState<IngestionResult | null>(null);
+  const [ingestionError, setIngestionError] = useState<string | null>(null);
   const [showSplash, setShowSplash] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -180,6 +195,19 @@ export default function BrieflyApp({
     ["needs-feed", "Needs feed", sourceStats.needsFeed],
     ["active", "Active", sourceStats.active],
   ];
+  const operatorStats = useMemo(
+    () => ({
+      allSources: homepageData.sources.length,
+      readyFeeds: homepageData.sources.filter(
+        (source) =>
+          source.active &&
+          Boolean(source.feedUrl) &&
+          source.verificationStatus === "verified_feed",
+      ).length,
+      inactiveSources: homepageData.sources.filter((source) => !source.active).length,
+    }),
+    [homepageData.sources],
+  );
 
   useEffect(() => {
     setState(loadStoredState());
@@ -266,10 +294,49 @@ export default function BrieflyApp({
     await navigator.clipboard?.writeText(shareText);
   }
 
+  async function runIngestion() {
+    const token = ingestionToken.trim();
+    if (!token) {
+      setIngestionError("Enter the ingestion token first.");
+      return;
+    }
+
+    setIngestionRunning(true);
+    setIngestionError(null);
+    setIngestionResult(null);
+
+    try {
+      const response = await fetch("/api/ingestion/rss", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof payload.error === "string"
+            ? payload.error
+            : "Ingestion request failed.",
+        );
+      }
+
+      setIngestionResult(payload as IngestionResult);
+    } catch (error) {
+      setIngestionError(
+        error instanceof Error ? error.message : "Ingestion request failed.",
+      );
+    } finally {
+      setIngestionRunning(false);
+    }
+  }
+
   const tabs: Array<[ViewName, string]> = [
     ["home", copy.tabHome],
     ["brief", copy.tabBrief],
     ["sources", copy.tabSources],
+    ["operator", "Operator"],
     ["editorial", copy.tabEditorial],
     ["studio", copy.tabStudio],
   ];
@@ -606,6 +673,87 @@ export default function BrieflyApp({
                 <InfoList title={copy.decisionsTitle} items={setupDecisions} />
                 <InfoList title={copy.schemaTitle} items={schemaTables} />
               </div>
+            </section>
+          )}
+
+          {view === "operator" && (
+            <section className="view is-active">
+              <div className="section-heading">
+                <p className="eyebrow">Operations</p>
+                <h1>Operator</h1>
+                <p>Run source ingestion and check the latest result.</p>
+              </div>
+
+              <section className="operator-panel" aria-label="Ingestion controls">
+                <div className="operator-grid">
+                  <div className="operator-stat">
+                    <strong>{operatorStats.allSources}</strong>
+                    <span>Sources</span>
+                  </div>
+                  <div className="operator-stat">
+                    <strong>{operatorStats.readyFeeds}</strong>
+                    <span>Ready feeds</span>
+                  </div>
+                  <div className="operator-stat">
+                    <strong>{operatorStats.inactiveSources}</strong>
+                    <span>Inactive</span>
+                  </div>
+                </div>
+
+                <div className="operator-form">
+                  <label>
+                    <span>Ingestion token</span>
+                    <input
+                      type="password"
+                      value={ingestionToken}
+                      placeholder="Paste token"
+                      autoComplete="off"
+                      onChange={(event) => setIngestionToken(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    className="primary-action"
+                    type="button"
+                    disabled={ingestionRunning}
+                    onClick={() => void runIngestion()}
+                  >
+                    {ingestionRunning ? "Running..." : "Run RSS ingestion"}
+                  </button>
+                </div>
+
+                {ingestionError && (
+                  <p className="operator-error" role="alert">
+                    {ingestionError}
+                  </p>
+                )}
+
+                {ingestionResult && (
+                  <section className="operator-result" aria-live="polite">
+                    <div className="operator-result-head">
+                      <h2>Last run</h2>
+                      <span>{ingestionResult.plannedSources} planned</span>
+                    </div>
+                    <div className="operator-list">
+                      {ingestionResult.results.map((result) => (
+                        <article
+                          className="operator-run"
+                          key={`${result.source}-${result.status}`}
+                        >
+                          <div>
+                            <h3>{result.source}</h3>
+                            <p>{result.error ?? result.status}</p>
+                          </div>
+                          <span className="status-pill">{result.status}</span>
+                          <small>
+                            {result.recordsFound ?? 0} found ·{" "}
+                            {result.recordsImported ?? 0} imported
+                          </small>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </section>
             </section>
           )}
 

@@ -87,7 +87,23 @@ The route:
 4. Upserts `raw_articles` by `(source_id, original_url)` or `(source_id, guid)`.
 5. Writes one `ingestion_logs` row for each source run.
 
+## Operator Control
+
+The app includes an `Operator` tab for manual runs.
+
+The operator enters `INGESTION_API_TOKEN` in a password field and clicks
+`Run RSS ingestion`. The token is sent only with that request and is not saved
+in local storage or committed to the repository.
+
+This is intended for controlled manual operation until a scheduled job is added.
+In production, Vercel must have these environment variables set before the
+button can work:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `INGESTION_API_TOKEN`
+
 ## Next Implementation Step
 
-Add a small operator UI or scheduled job that can call the protected endpoint
-without exposing secrets to readers.
+Add scheduling for the protected endpoint once active verified feeds are ready.
