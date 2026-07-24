@@ -4,11 +4,22 @@ export type MarketCode = (typeof brieflySeed.markets)[number]["code"];
 export type BrieflyMarket = (typeof brieflySeed.markets)[number];
 export type BrieflyStory =
   (typeof brieflySeed.dailyBriefs)[MarketCode]["stories"][number];
-export type BrieflySource = (typeof brieflySeed.sources)[number];
+export type BrieflySource = {
+  market: MarketCode;
+  name: string;
+  websiteUrl: string;
+  feedUrl: string | null;
+  type: string;
+  language: string;
+  category: string;
+  active: boolean;
+  official?: boolean;
+  verificationStatus: string;
+};
 export type UiCopy = (typeof brieflySeed.ui)[MarketCode];
 
 export const markets = brieflySeed.markets;
-export const sourceRecords = brieflySeed.sources;
+export const sourceRecords: readonly BrieflySource[] = brieflySeed.sources;
 export const architectureNotes = brieflySeed.architecture;
 export const setupDecisions = brieflySeed.decisions;
 export const schemaTables = brieflySeed.schemaTables;

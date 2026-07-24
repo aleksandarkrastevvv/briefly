@@ -6,6 +6,8 @@ const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "..");
 const dataSource = fs.readFileSync(path.join(root, "src/lib/seed-data.ts"), "utf8");
 const pageSource = fs.readFileSync(path.join(root, "src/app/page.tsx"), "utf8");
+const appSource = fs.readFileSync(path.join(root, "src/app/briefly-app.tsx"), "utf8");
+const supabaseDataSource = fs.readFileSync(path.join(root, "src/lib/supabase-data.ts"), "utf8");
 const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
 const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
@@ -75,7 +77,24 @@ for (const source of data.sources) {
   "profileOptions.map",
   "navigator.share",
 ].forEach((needle) => {
-  assert.ok(pageSource.includes(needle), `Missing Next.js app marker: ${needle}`);
+  assert.ok(appSource.includes(needle), `Missing Next.js app marker: ${needle}`);
+});
+
+[
+  "getHomepageData",
+  "force-dynamic",
+  "<BrieflyApp homepageData={homepageData} />",
+].forEach((needle) => {
+  assert.ok(pageSource.includes(needle), `Homepage missing Supabase wrapper marker: ${needle}`);
+});
+
+[
+  ".from(\"sources\")",
+  "verification_status",
+  "source: \"supabase\"",
+  "source: \"seed\"",
+].forEach((needle) => {
+  assert.ok(supabaseDataSource.includes(needle), `Supabase data loader missing: ${needle}`);
 });
 
 [
@@ -100,6 +119,7 @@ for (const source of data.sources) {
 
 [
   "SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
   "persistSession: false",
 ].forEach((needle) => {
   assert.ok(supabaseServerSource.includes(needle), `Supabase server client missing: ${needle}`);
