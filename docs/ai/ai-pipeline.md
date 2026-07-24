@@ -2,8 +2,9 @@
 
 ## Current Milestone
 
-Move from imported articles to reviewable Briefly story drafts. This milestone
-plans the AI layer only; it does not publish generated stories automatically.
+Move from imported articles to Briefly-style story drafts that can power the
+current reader experience. Formal approval workflow is deferred until the
+article-to-story experience works end to end.
 
 ## AI Jobs
 
@@ -29,7 +30,7 @@ Do not score every raw article separately with AI. Rank completed story clusters
 5. Require structured output that matches `storyGenerationOutputSchema`.
 6. Store drafts in `story_clusters` with `editorial_status = draft`.
 7. Attach source article ids through `story_sources`.
-8. Show generated drafts in an editorial review view before publishing.
+8. Show generated drafts in the existing Home, Brief and AI Studio experience.
 
 ## Candidate Selection
 
@@ -62,7 +63,9 @@ The first allowed confidence statuses are:
 - `needs_review`
 - `insufficient_support`
 
-Generated stories are never published directly. They must be reviewed first.
+Generated stories can appear in the current Briefly experience as source-grounded
+drafts. The app keeps confidence and editorial status visible while approval
+workflow is deferred.
 
 ## Grounding Rules
 
@@ -85,7 +88,8 @@ Generated drafts map to existing tables:
 - `story_clusters` stores the generated story draft.
 - `story_sources` links each story to its source `raw_articles`.
 - `ranking_logs` can store later daily ranking request/response metadata.
-- `daily_briefs` and `daily_brief_stories` are used only after editorial approval.
+- `daily_briefs` and `daily_brief_stories` are used later when scheduled daily
+  editions and approval workflow are introduced.
 
 ## Protected Manual Endpoint
 
@@ -112,6 +116,14 @@ The endpoint:
 6. Links each draft to source articles through `story_sources`.
 7. Returns generated draft counts.
 
+## Reader Display
+
+The homepage data loader reads recent `story_clusters`, attaches source names
+through `story_sources`, and adapts them into the same story shape used by the
+Briefly reader. When generated stories exist for the selected market, Home,
+Brief and AI Studio use them instead of seed demo stories. When no generated
+stories exist, the seed stories remain as a safe fallback.
+
 Required environment variables:
 
 - `OPENAI_API_KEY`
@@ -128,8 +140,5 @@ Default model:
 
 ## Next Implementation Step
 
-Add an operator control and editorial review view that:
-
-1. Runs the protected story generation endpoint.
-2. Shows generated story drafts.
-3. Lets an editor approve, edit, reject, or regenerate drafts.
+Add daily ranking and scheduling so Briefly can select the best 5 to 8 generated
+stories per market automatically.

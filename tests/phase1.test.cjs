@@ -78,14 +78,50 @@ for (const source of data.sources) {
   );
   assert.notEqual(source.verificationStatus, "verified", `${source.name} is not verified yet`);
   if (source.active) {
-    assert.equal(
-      source.verificationStatus,
-      "verified_feed",
-      `${source.name} must be a verified direct feed before activation`
+    assert.ok(
+      ["verified_feed", "configured_html_parser"].includes(source.verificationStatus),
+      `${source.name} must have either a verified direct feed or configured HTML parser before activation`
     );
     assert.ok(
-      ["BTA", "BNT", "BBC World"].includes(source.name),
-      `${source.name} should not be in the first active source set`
+      [
+        "BTA",
+        "Capital",
+        "Dnevnik",
+        "BNT",
+        "BBC World",
+        "Novinite.com",
+        "Actualno",
+        "Mediapool",
+        "Sega",
+        "24 Chasa",
+        "Svobodna Evropa",
+        "Ministry of Foreign Affairs",
+        "National Health Insurance Fund",
+        "Plovdiv Municipality",
+        "Varna Municipality",
+        "Council of Ministers",
+        "President of Bulgaria",
+        "Ministry of Finance",
+        "Ministry of Interior",
+        "Ministry of Health",
+        "Ministry of Education and Science",
+        "National Revenue Agency",
+        "National Statistical Institute",
+        "Ministry of Electronic Governance",
+        "Registry Agency",
+        "Public Procurement Agency",
+        "Commission for Consumer Protection",
+        "Financial Supervision Commission",
+        "Commission on Protection of Competition",
+        "Ombudsman of Bulgaria",
+        "Road Infrastructure Agency",
+        "Sofia Municipality",
+        "Ruse Municipality",
+        "Blagoevgrad Municipality",
+        "Sliven Municipality",
+        "Shumen Municipality",
+      ].includes(source.name),
+      `${source.name} should not be in the active ingestion source set`
     );
   }
 }
@@ -96,8 +132,8 @@ const activeBulgarianSources = data.sources
   .sort();
 assert.equal(
   activeBulgarianSources.join(","),
-  "BBC World,BNT,BTA",
-  "Only the first verified Bulgarian RSS feeds should be active"
+  "24 Chasa,Actualno,BBC World,BNT,BTA,Blagoevgrad Municipality,Capital,Commission for Consumer Protection,Commission on Protection of Competition,Council of Ministers,Dnevnik,Financial Supervision Commission,Mediapool,Ministry of Education and Science,Ministry of Electronic Governance,Ministry of Finance,Ministry of Foreign Affairs,Ministry of Health,Ministry of Interior,National Health Insurance Fund,National Revenue Agency,National Statistical Institute,Novinite.com,Ombudsman of Bulgaria,Plovdiv Municipality,President of Bulgaria,Public Procurement Agency,Registry Agency,Road Infrastructure Agency,Ruse Municipality,Sega,Shumen Municipality,Sliven Municipality,Sofia Municipality,Svobodna Evropa,Varna Municipality",
+  "Only verified Bulgarian RSS feeds and configured HTML parsers should be active"
 );
 
 [
@@ -124,6 +160,9 @@ assert.equal(
   "source-dashboard",
   "importedRows",
   "Imported articles",
+  "generatedStories",
+  "Generate daily stories",
+  "/api/ai/stories",
   "article-list",
   "ingestionLogRows",
   "operator-panel",
@@ -144,8 +183,11 @@ assert.equal(
 [
   ".from(\"sources\")",
   ".from(\"raw_articles\")",
+  ".from(\"story_clusters\")",
   ".from(\"ingestion_logs\")",
   "importedArticles",
+  "generatedStories",
+  "story_sources(raw_articles",
   "ingestionLogs",
   "verification_status",
   "source: \"supabase\"",
@@ -156,6 +198,8 @@ assert.equal(
 
 [
   "planRssIngestion",
+  "planContentIngestion",
+  "parseHtmlItems",
   "parseFeedItems",
   "normalizeFeedItem",
   "dedupeFeedItems",
@@ -163,6 +207,7 @@ assert.equal(
   "trackingParams",
   "toRawArticleInsert",
   "verification_status !== \"verified_feed\"",
+  "configured_html_parser",
 ].forEach((needle) => {
   assert.ok(rssIngestionSource.includes(needle), `RSS ingestion skeleton missing: ${needle}`);
 });
@@ -170,6 +215,7 @@ assert.equal(
 [
   "INGESTION_API_TOKEN",
   "createAdminSupabaseClient",
+  "parseHtmlItems(content, run.sourceUrl, run.parserConfig)",
   "normalizeFeedItem(item, run.sourceCategory)",
   "dedupeFeedItems",
   "writeTo(supabase, \"raw_articles\")",
@@ -209,7 +255,7 @@ assert.equal(
 });
 
 [
-  "RSS Ingestion Skeleton",
+  "Ingestion Skeleton",
   "Article Normalization",
   "removing common tracking parameters",
   "active = true",
@@ -225,8 +271,9 @@ assert.equal(
   "Story Generation Flow",
   "storyGenerationOutputSchema",
   "editorial_status = draft",
+  "Reader Display",
   "POST /api/ai/stories",
-  "Generated stories are never published directly",
+  "Generated stories can appear",
   "OPENAI_API_KEY",
 ].forEach((needle) => {
   assert.ok(aiPipelineDoc.includes(needle), `AI pipeline plan missing: ${needle}`);
@@ -316,10 +363,14 @@ assert.ok(envExample.includes("STORY_GENERATION_MODEL"), "Env example needs stor
   "https://www.bta.bg/bg/rss/free",
   "https://news.bnt.bg/bg/rss/news.xml",
   "('BG', 'BTA', 'https://www.bta.bg', 'https://www.bta.bg/bg/rss/free', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed')",
+  "('BG', 'Capital', 'https://www.capital.bg', 'https://www.capital.bg/rss/', 'rss', 'Bulgarian', 'business', false, true, 'verified_feed')",
+  "('BG', 'Dnevnik', 'https://www.dnevnik.bg', 'https://www.dnevnik.bg/rss/', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed')",
+  "('BG', 'Actualno', 'https://www.actualno.com', 'https://www.actualno.com/rss', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed')",
+  "('BG', 'Ministry of Foreign Affairs', 'https://www.mfa.bg', 'https://www.mfa.bg/bg/rss', 'rss', 'Bulgarian', 'government', true, true, 'verified_feed')",
+  "('BG', 'Plovdiv Municipality', 'https://www.plovdiv.bg', 'https://www.plovdiv.bg/feed/', 'rss', 'Bulgarian', 'local', true, true, 'verified_feed')",
   "('BG', 'BNT', 'https://bntnews.bg', 'https://news.bnt.bg/bg/rss/news.xml', 'rss', 'Bulgarian', 'public_media', false, true, 'verified_feed')",
   "('BG', 'BBC World', 'https://www.bbc.com/news/world', 'https://www.bbc.com/news/world/rss.xml', 'rss', 'English', 'world', false, true, 'verified_feed')",
   "verified_feed",
-  "candidate_feed_blocked_403",
   "requires_verification",
 ].forEach((needle) => {
   assert.ok(seedSql.includes(needle), `Seed SQL missing: ${needle}`);

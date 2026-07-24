@@ -6,7 +6,28 @@ export type HomepageData = {
   sources: BrieflySource[];
   importedArticles: ImportedArticle[];
   ingestionLogs: IngestionLog[];
+  generatedStories: GeneratedBrieflyStory[];
   source: "supabase" | "seed";
+};
+
+export type GeneratedBrieflyStory = {
+  id: string;
+  market: MarketCode;
+  category: string;
+  headline: string;
+  description: string;
+  keyPoints: [string, string, string];
+  whyItMatters: string;
+  next: string;
+  meansForMe: Record<string, string>;
+  sources: string[];
+  sourceCount: number;
+  updatedAt: string;
+  image: string;
+  sample: false;
+  official?: boolean;
+  confidenceStatus: string;
+  editorialStatus: string;
 };
 
 export type ImportedArticle = {
@@ -71,6 +92,32 @@ type SupabaseIngestionLogRow = {
   created_at: string;
 };
 
+type SupabaseStoryClusterRow = {
+  id: string;
+  market_code: string;
+  canonical_headline: string;
+  summary: string;
+  key_points: unknown;
+  why_it_matters: string;
+  what_happens_next: string | null;
+  affected_audiences: string[] | null;
+  category: string;
+  confidence_status: string;
+  editorial_status: string;
+  earliest_publication_at: string | null;
+  latest_update_at: string | null;
+  created_at: string;
+  story_sources?: Array<{
+    raw_articles?: {
+      original_url: string;
+      sources?: {
+        name: string;
+        official: boolean;
+      } | null;
+    } | null;
+  }>;
+};
+
 function isMarketCode(value: string): value is MarketCode {
   return value === "BG" || value === "RS";
 }
@@ -83,6 +130,7 @@ export async function getHomepageData(): Promise<HomepageData> {
       sources: [...getSourcesForMarket("BG"), ...getSourcesForMarket("RS")],
       importedArticles: [],
       ingestionLogs: [],
+      generatedStories: [],
       source: "seed",
     };
   }
@@ -101,6 +149,7 @@ export async function getHomepageData(): Promise<HomepageData> {
       sources: [...getSourcesForMarket("BG"), ...getSourcesForMarket("RS")],
       importedArticles: [],
       ingestionLogs: [],
+      generatedStories: [],
       source: "seed",
     };
   }
@@ -108,7 +157,7 @@ export async function getHomepageData(): Promise<HomepageData> {
   const rows = data as SupabaseSourceRow[];
   const sourceNames = new Map(rows.map((source) => [source.id, source.name]));
 
-  const [{ data: articleData }, { data: logData }] = await Promise.all([
+  const [{ data: articleData }, { data: logData }, { data: storyData }] = await Promise.all([
     supabase
       .from("raw_articles")
       .select(
@@ -123,6 +172,14 @@ export async function getHomepageData(): Promise<HomepageData> {
       )
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase
+      .from("story_clusters")
+      .select(
+        "id,market_code,canonical_headline,summary,key_points,why_it_matters,what_happens_next,affected_audiences,category,confidence_status,editorial_status,earliest_publication_at,latest_update_at,created_at,story_sources(raw_articles(original_url,sources(name,official)))",
+      )
+      .order("latest_update_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(24),
   ]);
 
   return {
@@ -177,6 +234,102 @@ export async function getHomepageData(): Promise<HomepageData> {
         createdAt: log.created_at,
       };
     }),
+    generatedStories: ((storyData ?? []) as SupabaseStoryClusterRow[]).flatMap(
+      (story) => {
+        if (!isMarketCode(story.market_code)) return [];
+
+        const keyPoints = readThreeKeyPoints(story.key_points);
+        const sourceRows = story.story_sources ?? [];
+        const sourceNames = Array.from(
+          new Set(
+            sourceRows
+              .map((source) => source.raw_articles?.sources?.name)
+              .filter((name): name is string => Boolean(name)),
+          ),
+        );
+        const official = sourceRows.some(
+          (source) => source.raw_articles?.sources?.official,
+        );
+        const affectedAudiences = Array.isArray(story.affected_audiences)
+          ? story.affected_audiences
+          : [];
+
+        return {
+          id: story.id,
+          market: story.market_code,
+          category: story.category,
+          headline: story.canonical_headline,
+          description: story.summary,
+          keyPoints,
+          whyItMatters: story.why_it_matters,
+          next:
+            story.what_happens_next ??
+            (story.market_code === "RS"
+              ? "Pratimo nove informacije iz povezanih izvora."
+              : "Следим новите данни от свързаните източници."),
+          meansForMe: {
+            default:
+              affectedAudiences.length > 0
+                ? affectedAudiences.join(", ")
+                : story.market_code === "RS"
+                  ? "Ovo je generisana priča iz uvezenih izvora. Proveri povezane izvore za detalje."
+                  : "Това е генерирана история от внесени източници. Провери свързаните източници за детайли.",
+          },
+          sources: sourceNames.length > 0 ? sourceNames : ["Imported sources"],
+          sourceCount: Math.max(sourceRows.length, sourceNames.length, 1),
+          updatedAt:
+            story.latest_update_at ?? story.earliest_publication_at ?? story.created_at,
+          image: imageForCategory(story.market_code, story.category),
+          sample: false,
+          official,
+          confidenceStatus: story.confidence_status,
+          editorialStatus: story.editorial_status,
+        };
+      },
+    ),
     source: "supabase",
   };
+}
+
+function readThreeKeyPoints(value: unknown): [string, string, string] {
+  if (Array.isArray(value)) {
+    const points = value
+      .filter((point): point is string => typeof point === "string")
+      .map((point) => point.trim())
+      .filter(Boolean);
+
+    if (points.length >= 3) {
+      return [points[0], points[1], points[2]];
+    }
+  }
+
+  return [
+    "Историята е генерирана от внесени статии.",
+    "Източниците остават видими за проверка.",
+    "Briefly показва само наличната подкрепена информация.",
+  ];
+}
+
+function imageForCategory(marketCode: MarketCode, category: string) {
+  const normalized = category.toLowerCase();
+
+  if (normalized.includes("econom") || normalized.includes("иконом")) {
+    return marketCode === "RS" ? "/assets/rs-economy.png" : "/assets/bg-economy.png";
+  }
+
+  if (normalized.includes("health") || normalized.includes("здрав")) {
+    return marketCode === "RS" ? "/assets/rs-health.png" : "/assets/bg-health.png";
+  }
+
+  if (normalized.includes("energy") || normalized.includes("енерг")) {
+    return marketCode === "RS" ? "/assets/rs-energy.png" : "/assets/bg-energy.png";
+  }
+
+  if (normalized.includes("world") || normalized.includes("свят")) {
+    return marketCode === "RS" ? "/assets/rs-world.png" : "/assets/bg-world.png";
+  }
+
+  return marketCode === "RS"
+    ? "/assets/rs-transport.png"
+    : "/assets/bg-transport.png";
 }

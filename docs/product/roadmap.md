@@ -42,8 +42,9 @@
 - key facts
 - why it matters
 - what happens next
+- generated stories shown in the current Briefly reader
 - daily ranking
-- editorial review
+- editorial review later
 
 ## Phase 5: Personalisation
 

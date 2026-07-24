@@ -1,17 +1,8 @@
--- Seed configuration for Briefly markets and initial source records.
--- Verified RSS feeds and configured HTML parsers are active for ingestion.
--- Verification statuses reflect feed/page checks from 2026-07-25.
-
-insert into markets (code, locale, language, default_script, timezone, active)
-values
-  ('BG', 'bg-BG', 'Bulgarian', null, 'Europe/Sofia', true),
-  ('RS', 'sr-RS', 'Serbian', 'Latin', 'Europe/Belgrade', true)
-on conflict (code) do update set
-  locale = excluded.locale,
-  language = excluded.language,
-  default_script = excluded.default_script,
-  timezone = excluded.timezone,
-  active = excluded.active;
+-- Expand Bulgarian sources for Briefly ingestion and source tracking.
+-- Checked on 2026-07-25.
+--
+-- Active = true only for verified RSS/XML feeds or configured HTML parsers.
+-- Important pages without a clean feed remain inactive until a parser is added.
 
 insert into sources (
   market_code,
@@ -26,11 +17,8 @@ insert into sources (
   verification_status
 )
 values
-  ('BG', 'BTA', 'https://www.bta.bg', 'https://www.bta.bg/bg/rss/free', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed'),
   ('BG', 'Capital', 'https://www.capital.bg', 'https://www.capital.bg/rss/', 'rss', 'Bulgarian', 'business', false, true, 'verified_feed'),
   ('BG', 'Dnevnik', 'https://www.dnevnik.bg', 'https://www.dnevnik.bg/rss/', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed'),
-  ('BG', 'BNT', 'https://bntnews.bg', 'https://news.bnt.bg/bg/rss/news.xml', 'rss', 'Bulgarian', 'public_media', false, true, 'verified_feed'),
-  ('BG', 'BBC World', 'https://www.bbc.com/news/world', 'https://www.bbc.com/news/world/rss.xml', 'rss', 'English', 'world', false, true, 'verified_feed'),
   ('BG', 'Novinite.com', 'https://www.novinite.com', 'https://www.novinite.com/services/news_rdf.php', 'rss', 'English', 'general', false, true, 'verified_feed'),
   ('BG', 'Actualno', 'https://www.actualno.com', 'https://www.actualno.com/rss', 'rss', 'Bulgarian', 'general', false, true, 'verified_feed'),
   ('BG', 'Mediapool', 'https://www.mediapool.bg', 'https://www.mediapool.bg/rss', 'rss', 'Bulgarian', 'politics', false, true, 'verified_feed'),
@@ -43,8 +31,6 @@ values
   ('BG', 'Darik News', 'https://dariknews.bg', 'https://dariknews.bg', 'html', 'Bulgarian', 'general', false, false, 'verified_page'),
   ('BG', 'Dnes.bg', 'https://www.dnes.bg', 'https://www.dnes.bg', 'html', 'Bulgarian', 'general', false, false, 'verified_page'),
   ('BG', 'News.bg', 'https://news.bg', 'https://news.bg', 'html', 'Bulgarian', 'general', false, false, 'verified_page'),
-  ('BG', 'National Assembly', 'https://www.parliament.bg', 'https://www.parliament.bg/bg/rss', 'official', 'Bulgarian', 'government', true, false, 'verified_rss_index'),
-  ('BG', 'Council of Ministers', 'https://www.gov.bg', 'https://www.gov.bg/bg/prestsentar/novini', 'official', 'Bulgarian', 'government', true, false, 'verified_page'),
   ('BG', 'President of Bulgaria', 'https://www.president.bg', 'https://www.president.bg', 'official', 'Bulgarian', 'government', true, false, 'verified_page'),
   ('BG', 'Ministry of Foreign Affairs', 'https://www.mfa.bg', 'https://www.mfa.bg/bg/rss', 'rss', 'Bulgarian', 'government', true, true, 'verified_feed'),
   ('BG', 'Ministry of Finance', 'https://www.minfin.bg', 'https://www.minfin.bg/bg/news', 'official', 'Bulgarian', 'government', true, false, 'verified_page'),
@@ -77,21 +63,7 @@ values
   ('BG', 'Dobrich Municipality', 'https://www.dobrich.bg', 'https://www.dobrich.bg/bg/rss', 'official', 'Bulgarian', 'local', true, false, 'verified_empty_feed'),
   ('BG', 'Blagoevgrad Municipality', 'https://www.blagoevgrad.bg', 'https://www.blagoevgrad.bg', 'official', 'Bulgarian', 'local', true, false, 'verified_page'),
   ('BG', 'Sliven Municipality', 'https://www.sliven.bg', 'https://www.sliven.bg', 'official', 'Bulgarian', 'local', true, false, 'verified_page'),
-  ('BG', 'Shumen Municipality', 'https://www.shumen.bg', 'https://www.shumen.bg', 'official', 'Bulgarian', 'local', true, false, 'verified_page'),
-  ('RS', 'Tanjug', 'https://www.tanjug.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'RTS', 'https://www.rts.rs', null, 'rss', 'Serbian', 'public_media', false, false, 'requires_verification'),
-  ('RS', 'B92', 'https://www.b92.net', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Blic', 'https://www.blic.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Danas', 'https://www.danas.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Kurir', 'https://www.kurir.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Mondo', 'https://mondo.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'N1 Srbija', 'https://n1info.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Nova.rs', 'https://nova.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Politika', 'https://www.politika.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Telegraf.rs', 'https://www.telegraf.rs', null, 'rss', 'Serbian', 'general', false, false, 'requires_verification'),
-  ('RS', 'Južne Vesti', 'https://www.juznevesti.com', null, 'rss', 'Serbian', 'regional', false, false, 'requires_verification'),
-  ('RS', 'Vreme', 'https://www.vreme.com', null, 'rss', 'Serbian', 'analysis', false, false, 'requires_verification'),
-  ('RS', 'RTV Vojvodina', 'https://www.rtv.rs', null, 'rss', 'Serbian', 'public_media', false, false, 'requires_verification')
+  ('BG', 'Shumen Municipality', 'https://www.shumen.bg', 'https://www.shumen.bg', 'official', 'Bulgarian', 'local', true, false, 'verified_page')
 on conflict (market_code, name) do update set
   website_url = excluded.website_url,
   feed_or_page_url = excluded.feed_or_page_url,
@@ -100,8 +72,11 @@ on conflict (market_code, name) do update set
   category = excluded.category,
   official = excluded.official,
   active = excluded.active,
-  verification_status = excluded.verification_status;
+  verification_status = excluded.verification_status,
+  updated_at = now();
 
+-- First HTML parser batch for official and high-value Bulgarian pages.
+-- These pages are imported by extracting same-site article links from a known news page.
 update sources
 set
   active = true,
