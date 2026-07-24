@@ -13,6 +13,7 @@ const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-s
 const rssIngestionSource = fs.readFileSync(path.join(root, "src/lib/ingestion/rss.ts"), "utf8");
 const storyGenerationSource = fs.readFileSync(path.join(root, "src/lib/ai/story-generation.ts"), "utf8");
 const rssIngestionRoute = fs.readFileSync(path.join(root, "src/app/api/ingestion/rss/route.ts"), "utf8");
+const storyGenerationRoute = fs.readFileSync(path.join(root, "src/app/api/ai/stories/route.ts"), "utf8");
 const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
 const aiPipelineDoc = fs.readFileSync(path.join(root, "docs/ai/ai-pipeline.md"), "utf8");
 const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
@@ -170,14 +171,30 @@ assert.equal(
 [
   "StoryGenerationInput",
   "GeneratedStoryDraft",
+  "StoryGenerationOutput",
   "storyGenerationOutputSchema",
   "getStoryGenerationSystemPrompt",
   "buildStoryGenerationUserPrompt",
   "selectStoryGenerationCandidates",
+  "parseStoryGenerationOutput",
   "insufficient_support",
   "sourceArticleIds",
 ].forEach((needle) => {
   assert.ok(storyGenerationSource.includes(needle), `Story generation contract missing: ${needle}`);
+});
+
+[
+  "OPENAI_API_KEY",
+  "STORY_GENERATION_MODEL",
+  "https://api.openai.com/v1/responses",
+  "storyGenerationOutputSchema",
+  "parseStoryGenerationOutput",
+  "\"story_clusters\"",
+  "writeTo(supabase, \"story_sources\")",
+  "editorial_status: \"draft\"",
+  "readBearerToken",
+].forEach((needle) => {
+  assert.ok(storyGenerationRoute.includes(needle), `Story generation route missing: ${needle}`);
 });
 
 [
@@ -197,6 +214,7 @@ assert.equal(
   "Story Generation Flow",
   "storyGenerationOutputSchema",
   "editorial_status = draft",
+  "POST /api/ai/stories",
   "Generated stories are never published directly",
   "OPENAI_API_KEY",
 ].forEach((needle) => {
@@ -205,12 +223,14 @@ assert.equal(
 
 assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingestion token");
 assert.ok(envExample.includes("OPENAI_API_KEY"), "Env example needs OpenAI key");
+assert.ok(envExample.includes("STORY_GENERATION_MODEL"), "Env example needs story model override");
 
 [
   "create table if not exists markets",
   "create table if not exists sources",
   "create table if not exists raw_articles",
   "create table if not exists story_clusters",
+  "create table if not exists story_sources",
   "create table if not exists daily_briefs",
   "create table if not exists ingestion_logs",
   "create table if not exists generated_social_content",
