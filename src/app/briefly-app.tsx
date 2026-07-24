@@ -14,7 +14,7 @@ import {
   type BrieflyStory,
   type MarketCode,
 } from "@/lib/briefly";
-import type { HomepageData } from "@/lib/supabase-data";
+import type { GeneratedBrieflyStory, HomepageData } from "@/lib/supabase-data";
 
 type ViewName =
   | "home"
@@ -25,6 +25,7 @@ type ViewName =
   | "editorial"
   | "studio";
 type SourceFilter = "all" | "official" | "needs-feed" | "active";
+type DisplayStory = BrieflyStory | GeneratedBrieflyStory;
 
 type IngestionResult = {
   plannedSources: number;
@@ -34,6 +35,18 @@ type IngestionResult = {
     recordsFound?: number;
     recordsImported?: number;
     error?: string;
+  }>;
+};
+
+type StoryGenerationResult = {
+  marketCode: MarketCode;
+  candidateCount: number;
+  generatedCount: number;
+  stories: Array<{
+    id: string;
+    headline: string;
+    sourceCount: number;
+    confidenceStatus: string;
   }>;
 };
 
@@ -121,7 +134,7 @@ function sourceText(marketCode: MarketCode, sourceCount: number) {
   return sourceCount === 1 ? copy.oneSource : copy.sourceCount;
 }
 
-function meaningForProfile(story: BrieflyStory, profile: string[]) {
+function meaningForProfile(story: DisplayStory, profile: string[]) {
   const meanings = story.meansForMe as Record<string, string>;
   const matchedProfile = profile.find((item) => meanings[item]);
   if (matchedProfile) {
@@ -129,6 +142,10 @@ function meaningForProfile(story: BrieflyStory, profile: string[]) {
   }
 
   return meanings.default;
+}
+
+function isGeneratedStory(story: DisplayStory): story is GeneratedBrieflyStory {
+  return "confidenceStatus" in story;
 }
 
 export default function BrieflyApp({
@@ -146,13 +163,30 @@ export default function BrieflyApp({
   const [ingestionRunning, setIngestionRunning] = useState(false);
   const [ingestionResult, setIngestionResult] = useState<IngestionResult | null>(null);
   const [ingestionError, setIngestionError] = useState<string | null>(null);
+  const [storyGenerationRunning, setStoryGenerationRunning] = useState(false);
+  const [storyGenerationResult, setStoryGenerationResult] =
+    useState<StoryGenerationResult | null>(null);
+  const [storyGenerationError, setStoryGenerationError] = useState<string | null>(
+    null,
+  );
   const [showSplash, setShowSplash] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const market = getMarket(state.market);
   const copy = getUiCopy(state.market);
   const dailyBrief = getDailyBrief(state.market);
-  const stories = getStories(state.market);
+  const seedStories = getStories(state.market);
+  const generatedStories = useMemo(
+    () =>
+      homepageData.generatedStories
+        .filter((story) => story.market === state.market)
+        .slice(0, 8),
+    [homepageData.generatedStories, state.market],
+  );
+  const stories: readonly DisplayStory[] =
+    generatedStories.length > 0 ? generatedStories : seedStories;
+  const storyMode = generatedStories.length > 0 ? "generated" : "seed";
+  const estimatedMinutes = Math.max(3, Math.min(8, Math.ceil(stories.length * 0.8)));
   const storyIndex = Math.min(
     Math.max(state.progress[state.market] ?? 0, 0),
     stories.length - 1,
@@ -312,7 +346,7 @@ export default function BrieflyApp({
     });
   }
 
-  async function shareStory(story: BrieflyStory) {
+  async function shareStory(story: DisplayStory) {
     const shareText = `${story.headline}\n\n${story.description}\n\nBriefly`;
     if (navigator.share) {
       await navigator.share({ title: story.headline, text: shareText });
@@ -356,6 +390,49 @@ export default function BrieflyApp({
       );
     } finally {
       setIngestionRunning(false);
+    }
+  }
+
+  async function runStoryGeneration() {
+    const token = ingestionToken.trim();
+    if (!token) {
+      setStoryGenerationError("Enter the ingestion token first.");
+      return;
+    }
+
+    setStoryGenerationRunning(true);
+    setStoryGenerationError(null);
+    setStoryGenerationResult(null);
+
+    try {
+      const response = await fetch("/api/ai/stories", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ marketCode: state.market }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof payload.error === "string"
+            ? payload.error
+            : "Story generation request failed.",
+        );
+      }
+
+      setStoryGenerationResult(payload as StoryGenerationResult);
+      window.setTimeout(() => window.location.reload(), 900);
+    } catch (error) {
+      setStoryGenerationError(
+        error instanceof Error
+          ? error.message
+          : "Story generation request failed.",
+      );
+    } finally {
+      setStoryGenerationRunning(false);
     }
   }
 
@@ -431,6 +508,9 @@ export default function BrieflyApp({
                   </p>
                   <h1>{greetingForHour(state.market)}</h1>
                   <p className="hero-subtitle">{market.dailyTitle}</p>
+                  {storyMode === "generated" && (
+                    <p className="live-note">Built from imported articles</p>
+                  )}
                 </div>
 
                 <div className="brief-summary" aria-live="polite">
@@ -439,7 +519,11 @@ export default function BrieflyApp({
                     <small>{copy.storiesLabel}</small>
                   </div>
                   <div>
-                    <span>{dailyBrief.estimatedMinutes}</span>
+                    <span>
+                      {storyMode === "generated"
+                        ? estimatedMinutes
+                        : dailyBrief.estimatedMinutes}
+                    </span>
                     <small>{copy.minutesLabel}</small>
                   </div>
                   <div>
@@ -710,6 +794,12 @@ export default function BrieflyApp({
                 <p className="eyebrow">Review</p>
                 <h1>Imported articles</h1>
                 <p>Check the latest articles collected by ingestion.</p>
+                {generatedStories.length > 0 && (
+                  <p>
+                    {generatedStories.length} generated Briefly-style stories are
+                    available for this market.
+                  </p>
+                )}
               </div>
 
               <section className="imported-dashboard" aria-label="Imported article summary">
@@ -836,6 +926,16 @@ export default function BrieflyApp({
                   >
                     {ingestionRunning ? "Running..." : "Run RSS ingestion"}
                   </button>
+                  <button
+                    className="secondary-action"
+                    type="button"
+                    disabled={storyGenerationRunning}
+                    onClick={() => void runStoryGeneration()}
+                  >
+                    {storyGenerationRunning
+                      ? "Generating..."
+                      : "Generate daily stories"}
+                  </button>
                 </div>
 
                 {ingestionError && (
@@ -865,6 +965,42 @@ export default function BrieflyApp({
                             {result.recordsFound ?? 0} found ·{" "}
                             {result.recordsImported ?? 0} imported
                           </small>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {storyGenerationError && (
+                  <p className="operator-error" role="alert">
+                    {storyGenerationError}
+                  </p>
+                )}
+
+                {storyGenerationResult && (
+                  <section className="operator-result" aria-live="polite">
+                    <div className="operator-result-head">
+                      <h2>Generated stories</h2>
+                      <span>
+                        {storyGenerationResult.generatedCount} from{" "}
+                        {storyGenerationResult.candidateCount} articles
+                      </span>
+                    </div>
+                    <div className="operator-list">
+                      {storyGenerationResult.stories.length === 0 && (
+                        <p className="empty-state">
+                          No story had enough support yet.
+                        </p>
+                      )}
+                      {storyGenerationResult.stories.map((story) => (
+                        <article className="operator-run" key={story.id}>
+                          <div>
+                            <h3>{story.headline}</h3>
+                            <p>{story.sourceCount} supporting articles</p>
+                          </div>
+                          <span className="status-pill">
+                            {story.confidenceStatus}
+                          </span>
                         </article>
                       ))}
                     </div>
@@ -936,7 +1072,7 @@ function StoryCard({
   onShare,
   onOpen,
 }: {
-  story: BrieflyStory;
+  story: DisplayStory;
   marketCode: MarketCode;
   copy: ReturnType<typeof getUiCopy>;
   isSaved: boolean;
@@ -951,7 +1087,9 @@ function StoryCard({
       <div className="story-image">
         <img className="story-img" src={story.image} alt="" />
         <span className="story-badge">
-          {story.sample ? copy.sampleBadge : story.category}
+          {isGeneratedStory(story)
+            ? story.confidenceStatus
+            : copy.sampleBadge}
         </span>
       </div>
       <div className="story-body">
@@ -959,6 +1097,7 @@ function StoryCard({
           <span>
             {story.category}
             {"official" in story && story.official ? ` · ${copy.official}` : ""}
+            {isGeneratedStory(story) ? ` · ${story.editorialStatus}` : ""}
           </span>
           <span>{formatTime(marketCode, story.updatedAt)}</span>
         </div>
@@ -1044,7 +1183,7 @@ function StudioOutput({
   story,
 }: {
   copy: ReturnType<typeof getUiCopy>;
-  story: BrieflyStory;
+  story: DisplayStory;
   marketCode: MarketCode;
 }) {
   const slideLines = [

@@ -12,14 +12,14 @@
 
 Prioritise RSS. Do not scrape full article content when RSS metadata is enough.
 
-## RSS Ingestion Skeleton
+## Ingestion Skeleton
 
 The first code layer lives in `src/lib/ingestion/rss.ts`.
 
 It does three things only:
 
 1. Plans eligible ingestion runs from configured source rows.
-2. Parses basic RSS or Atom metadata from feed XML.
+2. Parses basic RSS/Atom metadata from feed XML or configured links from HTML pages.
 3. Normalizes parsed feed items into `raw_articles` insert records.
 
 ## Article Normalization
@@ -45,15 +45,25 @@ It does not yet:
 
 ## Eligibility Rule
 
-A source can enter the RSS ingestion plan only when:
+A source can enter the ingestion plan in one of two ways.
+
+For RSS, Atom, or XML:
 
 - `active = true`
 - `feed_or_page_url` is present
 - `source_type` is `rss`, `atom` or `xml`
 - `verification_status = verified_feed`
 
-This keeps official page candidates and blocked feeds out of automatic ingestion
-until a parser or access strategy is reviewed.
+For HTML or official pages:
+
+- `active = true`
+- `feed_or_page_url` is present
+- `source_type` is `html` or `official`
+- `verification_status = configured_html_parser`
+- `parser_config` limits which same-site links can be imported
+
+This keeps blocked feeds and unconfigured pages out of automatic ingestion until
+they have an intentional parser or access strategy.
 
 ## Source Record Fields
 
@@ -96,10 +106,13 @@ Required production environment variables:
 The route:
 
 1. Loads eligible sources from Supabase.
-2. Fetches each feed with a short timeout.
-3. Parses, normalizes, and deduplicates feed items.
+2. Fetches each feed or configured page with a short timeout.
+3. Parses, normalizes, and deduplicates candidate article links.
 4. Upserts `raw_articles` by `(source_id, original_url)` or `(source_id, guid)`.
 5. Writes one `ingestion_logs` row for each source run.
+
+The request uses browser-style headers because some verified publisher endpoints,
+including Capital and Dnevnik, reject generic server fetches.
 
 ## Operator Control
 
@@ -109,6 +122,11 @@ The operator enters `INGESTION_API_TOKEN` in a password field and clicks
 `Run RSS ingestion`. The token is sent only with that request and is not saved
 in local storage or committed to the repository.
 
+After articles are imported, the same tab can run `Generate daily stories`.
+That calls the protected AI story endpoint for the selected market, saves
+Briefly-style story drafts, and refreshes the app so Home and Brief show the
+latest generated stories.
+
 This is intended for controlled manual operation until a scheduled job is added.
 In production, Vercel must have these environment variables set before the
 button can work:
@@ -117,7 +135,9 @@ button can work:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `INGESTION_API_TOKEN`
+- `OPENAI_API_KEY`
 
 ## Next Implementation Step
 
-Add scheduling for the protected endpoint once active verified feeds are ready.
+Tune source-specific HTML parser configs for official pages that import too few
+or too many links, then add scheduling for the protected endpoint.

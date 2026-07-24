@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import {
   dedupeFeedItems,
   normalizeFeedItem,
+  parseHtmlItems,
   parseFeedItems,
-  planRssIngestion,
+  planContentIngestion,
   toRawArticleInsert,
 } from "@/lib/ingestion/rss";
 import { createAdminSupabaseClient } from "@/lib/supabase-server";
@@ -48,16 +49,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const runs = planRssIngestion(sources ?? []);
+  const runs = planContentIngestion(sources ?? []);
   const results = [];
 
   for (const run of runs) {
     const checkedAt = new Date().toISOString();
 
     try {
-      const xml = await fetchWithTimeout(run.feedUrl);
+      const content = await fetchWithTimeout(run.sourceUrl);
+      const sourceItems =
+        run.sourceKind === "html" || run.sourceKind === "official"
+          ? parseHtmlItems(content, run.sourceUrl, run.parserConfig)
+          : parseFeedItems(content);
       const parsedItems = dedupeFeedItems(
-        parseFeedItems(xml).map((item) =>
+        sourceItems.map((item) =>
           normalizeFeedItem(item, run.sourceCategory),
         ),
       )
@@ -153,8 +158,10 @@ async function fetchWithTimeout(url: string) {
   try {
     const response = await fetch(url, {
       headers: {
-        accept: "application/rss+xml, application/atom+xml, application/xml, text/xml",
-        "user-agent": "Briefly ingestion/0.1",
+        accept:
+          "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html",
+        "user-agent":
+          "Mozilla/5.0 (compatible; Briefly/0.1; +https://everything-important-briefly.today)",
       },
       signal: controller.signal,
     });

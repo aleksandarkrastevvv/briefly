@@ -243,6 +243,18 @@ h3 {
   line-height: 1.25;
 }
 
+.live-note {
+  display: inline-flex;
+  margin: var(--space-3) 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-2);
+  color: var(--accent-strong);
+  background: #eef8f6;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .brief-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

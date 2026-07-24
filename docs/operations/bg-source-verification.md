@@ -1,35 +1,120 @@
 # Bulgarian Source Verification
 
-Last checked: 2026-07-24
+Last checked: 2026-07-25
 
-This note records the first Bulgarian source verification pass. Direct verified
-RSS feeds are active for the first ingestion run. Blocked feeds, index pages,
-and plain news pages remain inactive until a parser or access strategy is
-reviewed.
+This note records the Bulgarian source verification pass. Direct verified RSS
+feeds and configured HTML parsers are active for ingestion. Blocked feeds,
+empty feeds, index pages, and unconfigured plain news pages remain inactive until
+a parser or access strategy is reviewed.
 
 | Source | Result | Feed or page |
 | --- | --- | --- |
 | BTA | Verified RSS feed | https://www.bta.bg/bg/rss/free |
-| Capital | Candidate RSS exists, but direct server request returned 403 | https://www.capital.bg/rss |
-| Dnevnik | Candidate RSS exists, but direct server request returned 402 | https://www.dnevnik.bg/rss/?rubrid= |
+| Capital | Verified RSS feed with browser-style request headers | https://www.capital.bg/rss/ |
+| Dnevnik | Verified RSS feed with browser-style request headers | https://www.dnevnik.bg/rss/ |
 | BNT | Verified RSS feed | https://news.bnt.bg/bg/rss/news.xml |
 | BBC World | Verified RSS feed | https://www.bbc.com/news/world/rss.xml |
+| Novinite.com | Verified RSS feed | https://www.novinite.com/services/news_rdf.php |
+| Actualno | Verified RSS feed | https://www.actualno.com/rss |
+| Mediapool | Verified RSS feed | https://www.mediapool.bg/rss |
+| Sega | Verified RSS feed | https://www.segabg.com/rss/rss20.xml |
+| 24 Chasa | Verified RSS feed | https://www.24chasa.bg/rss |
+| Svobodna Evropa | Verified RSS feed | https://www.svobodnaevropa.bg/api/ |
+| OFFNews | Candidate feed blocked by Cloudflare from server request | https://offnews.bg/rss |
+| bTV Novinite | Verified page, no clean RSS activated yet | https://btvnovinite.bg |
+| NOVA News | Verified page, no clean RSS activated yet | https://nova.bg/news |
+| Darik News | Verified page, no clean RSS activated yet | https://dariknews.bg |
+| Dnes.bg | Verified page, no clean RSS activated yet | https://www.dnes.bg |
+| News.bg | Verified page, no clean RSS activated yet | https://news.bg |
 | National Assembly | Verified official RSS index page | https://www.parliament.bg/bg/rss |
-| Council of Ministers | Verified official news page | https://www.gov.bg/bg/prestsentar/novini |
-| National Revenue Agency | Verified official news page candidate | https://nra.bg/wps/portal/nra/actualno |
+| Council of Ministers | Configured HTML parser | https://www.gov.bg/bg/prestsentar/novini |
+| President of Bulgaria | Configured HTML parser | https://www.president.bg |
+| Ministry of Foreign Affairs | Verified official RSS feed | https://www.mfa.bg/bg/rss |
+| Ministry of Finance | Configured HTML parser | https://www.minfin.bg/bg/news |
+| Ministry of Interior | Configured HTML parser | https://www.mvr.bg |
+| Ministry of Health | Configured HTML parser | https://www.mh.government.bg/bg/novini/ |
+| Ministry of Education and Science | Configured HTML parser | https://www.mon.bg |
+| Ministry of Tourism | Verified RSS page, not direct XML in ingestion check | https://www.tourism.government.bg/bg/rss |
+| Ministry of Agriculture and Food | Verified RSS page, not direct XML in ingestion check | https://www.mzh.government.bg/bg/rss/ |
+| National Revenue Agency / НАП | Configured HTML parser; tested RSS guesses failed from server request | https://nra.bg/wps/portal/nra/actualno |
+| National Social Security Institute / НОИ | Verified official page; WordPress feed endpoints returned 403 | https://www.nssi.bg |
+| National Health Insurance Fund | Verified official RSS feed | https://www.nhif.bg/rss |
+| National Statistical Institute | Configured HTML parser | https://www.nsi.bg |
 | Bulgarian National Bank | Verified official RSS index page | https://www.bnb.bg/AboutUs/PressOffice/PORSS/index.htm |
+| Ministry of Electronic Governance | Configured HTML parser | https://egov.bg/wps/portal/egov |
+| Registry Agency | Configured HTML parser | https://portal.registryagency.bg |
+| Public Procurement Agency | Configured HTML parser | https://www2.aop.bg |
+| Commission for Consumer Protection | Configured HTML parser | https://kzp.bg |
+| Financial Supervision Commission | Configured HTML parser | https://www.fsc.bg |
+| Commission on Protection of Competition | Configured HTML parser | https://www.cpc.bg |
+| Ombudsman of Bulgaria | Configured HTML parser | https://www.ombudsman.bg |
+| Road Infrastructure Agency | Configured HTML parser | https://www.api.bg |
+| Sofia Municipality | Configured HTML parser | https://www.sofia.bg |
+| Plovdiv Municipality | Verified local RSS feed | https://www.plovdiv.bg/feed/ |
+| Varna Municipality | Verified local RSS feed | https://www.varna.bg/bg/rss |
+| Burgas Municipality | RSS endpoint returned empty content during check | https://www.burgas.bg/bg/rss |
+| Ruse Municipality | Configured HTML parser | https://obshtinaruse.bg |
+| Stara Zagora Municipality | RSS endpoint returned empty content during check | https://www.starazagora.bg/bg/rss |
+| Veliko Tarnovo Municipality | RSS endpoint returned empty content during check | https://www.veliko-tarnovo.bg/bg/rss |
+| Pleven Municipality | RSS endpoint returned empty content during check | https://www.pleven.bg/bg/rss |
+| Dobrich Municipality | RSS endpoint returned empty content during check | https://www.dobrich.bg/bg/rss |
+| Blagoevgrad Municipality | Configured HTML parser | https://www.blagoevgrad.bg |
+| Sliven Municipality | Configured HTML parser | https://www.sliven.bg |
+| Shumen Municipality | Configured HTML parser | https://www.shumen.bg |
 
 ## Active First Run Sources
 
 - BTA
+- Capital
+- Dnevnik
 - BNT
 - BBC World
+- Novinite.com
+- Actualno
+- Mediapool
+- Sega
+- 24 Chasa
+- Svobodna Evropa
+- Ministry of Foreign Affairs
+- National Health Insurance Fund
+- Plovdiv Municipality
+- Varna Municipality
 
 These are direct RSS/XML feeds with `verification_status = verified_feed`.
 
+## Active HTML Parser Sources
+
+- Council of Ministers
+- President of Bulgaria
+- Ministry of Finance
+- Ministry of Interior
+- Ministry of Health
+- Ministry of Education and Science
+- National Revenue Agency / НАП
+- National Statistical Institute
+- Ministry of Electronic Governance
+- Registry Agency
+- Public Procurement Agency
+- Commission for Consumer Protection
+- Financial Supervision Commission
+- Commission on Protection of Competition
+- Ombudsman of Bulgaria
+- Road Infrastructure Agency
+- Sofia Municipality
+- Ruse Municipality
+- Blagoevgrad Municipality
+- Sliven Municipality
+- Shumen Municipality
+
+These are page-based imports with `verification_status = configured_html_parser`.
+The parser imports same-site links that match configured news/path keywords.
+
 ## Follow-up
 
-- Recheck Capital and Dnevnik with a browser-like request during ingestion work.
 - Parse National Assembly and BNB RSS index pages before choosing a final feed.
-- Keep blocked, index-page, and official page candidates inactive until the
+- Tune parser support for important HTML-only sources and add source-specific
+  configs for bTV, NOVA, Darik, НОИ and harder municipality pages.
+- Recheck official feeds periodically because some administrations expose empty
+  XML endpoints or block generic feed access.
+- Keep blocked, index-page, and unconfigured page candidates inactive until the
   ingestion pipeline can parse them intentionally and log source-specific errors.
