@@ -6,7 +6,17 @@ const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "..");
 const dataSource = fs.readFileSync(path.join(root, "src/lib/seed-data.ts"), "utf8");
 const pageSource = fs.readFileSync(path.join(root, "src/app/page.tsx"), "utf8");
+const appSource = fs.readFileSync(path.join(root, "src/app/briefly-app.tsx"), "utf8");
+const supabaseDataSource = fs.readFileSync(path.join(root, "src/lib/supabase-data.ts"), "utf8");
+const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
+const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
+const rssIngestionSource = fs.readFileSync(path.join(root, "src/lib/ingestion/rss.ts"), "utf8");
+const rssIngestionRoute = fs.readFileSync(path.join(root, "src/app/api/ingestion/rss/route.ts"), "utf8");
+const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
+const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
 const sql = fs.readFileSync(path.join(root, "database/001_foundation.sql"), "utf8");
 
 const sandbox = {};
@@ -67,12 +77,71 @@ for (const source of data.sources) {
 [
   "function StoryCard",
   "function StudioOutput",
-  "sourceRows.map",
+  "filteredSourceRows.map",
+  "sourceStats",
+  "runIngestion",
+  "ingestionToken",
+  "Run RSS ingestion",
+  "type=\"password\"",
+  "/api/ingestion/rss",
+  "Authorization",
+  "source-filter",
+  "source-dashboard",
+  "operator-panel",
   "profileOptions.map",
   "navigator.share",
 ].forEach((needle) => {
-  assert.ok(pageSource.includes(needle), `Missing Next.js app marker: ${needle}`);
+  assert.ok(appSource.includes(needle), `Missing Next.js app marker: ${needle}`);
 });
+
+[
+  "getHomepageData",
+  "force-dynamic",
+  "<BrieflyApp homepageData={homepageData} />",
+].forEach((needle) => {
+  assert.ok(pageSource.includes(needle), `Homepage missing Supabase wrapper marker: ${needle}`);
+});
+
+[
+  ".from(\"sources\")",
+  "verification_status",
+  "source: \"supabase\"",
+  "source: \"seed\"",
+].forEach((needle) => {
+  assert.ok(supabaseDataSource.includes(needle), `Supabase data loader missing: ${needle}`);
+});
+
+[
+  "planRssIngestion",
+  "parseFeedItems",
+  "toRawArticleInsert",
+  "verification_status !== \"verified_feed\"",
+].forEach((needle) => {
+  assert.ok(rssIngestionSource.includes(needle), `RSS ingestion skeleton missing: ${needle}`);
+});
+
+[
+  "INGESTION_API_TOKEN",
+  "createAdminSupabaseClient",
+  "writeTo(supabase, \"raw_articles\")",
+  "writeTo(supabase, \"ingestion_logs\")",
+  "readBearerToken",
+].forEach((needle) => {
+  assert.ok(rssIngestionRoute.includes(needle), `RSS ingestion route missing: ${needle}`);
+});
+
+[
+  "RSS Ingestion Skeleton",
+  "active = true",
+  "Operator Control",
+  "POST /api/ingestion/rss",
+  "Writes one `ingestion_logs` row",
+  "not saved",
+].forEach((needle) => {
+  assert.ok(ingestionDoc.includes(needle), `Ingestion plan missing: ${needle}`);
+});
+
+assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingestion token");
 
 [
   "create table if not exists markets",
@@ -80,10 +149,44 @@ for (const source of data.sources) {
   "create table if not exists raw_articles",
   "create table if not exists story_clusters",
   "create table if not exists daily_briefs",
+  "create table if not exists ingestion_logs",
   "create table if not exists generated_social_content",
   "alter table saved_stories enable row level security",
 ].forEach((needle) => {
   assert.ok(sql.includes(needle), `Migration missing: ${needle}`);
 });
+
+[
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "createClient<Database>",
+].forEach((needle) => {
+  assert.ok(supabaseSource.includes(needle), `Supabase browser client missing: ${needle}`);
+});
+
+[
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "persistSession: false",
+].forEach((needle) => {
+  assert.ok(supabaseServerSource.includes(needle), `Supabase server client missing: ${needle}`);
+});
+
+[
+  "insert into markets",
+  "('BG', 'bg-BG'",
+  "('RS', 'sr-RS'",
+  "https://www.bta.bg/bg/rss/free",
+  "https://news.bnt.bg/bg/rss/news.xml",
+  "verified_feed",
+  "candidate_feed_blocked_403",
+  "requires_verification",
+].forEach((needle) => {
+  assert.ok(seedSql.includes(needle), `Seed SQL missing: ${needle}`);
+});
+
+assert.equal(vercelConfig.framework, "nextjs", "Vercel should use Next.js");
+assert.equal(vercelConfig.installCommand, "pnpm install", "Vercel install command should use pnpm");
+assert.equal(vercelConfig.buildCommand, "pnpm build", "Vercel build command should use pnpm");
 
 console.log("Phase 1 validation passed");

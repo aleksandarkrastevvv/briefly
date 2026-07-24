@@ -22,4 +22,10 @@ The target production domain is:
 
 `https://everything-important-briefly.today`
 
-Deployment should come from GitHub through the selected hosting provider. Lovable remains a reference unless the team decides to keep it in the deployment chain.
+Deployment should come from GitHub through Vercel. Lovable remains a reference unless the team decides to keep it in the deployment chain.
+
+## Vercel Branch Flow
+
+- `develop`: preview deployments
+- pull requests: preview deployments
+- `main`: production deployments

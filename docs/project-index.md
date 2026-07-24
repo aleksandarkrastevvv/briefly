@@ -13,6 +13,9 @@ Briefly is now following Option B:
 - Design system: `docs/design/design-system.md`
 - Engineering architecture: `docs/engineering/architecture.md`
 - Database: `docs/engineering/database.md`
+- Supabase setup: `docs/operations/supabase-setup.md`
+- Vercel setup: `docs/operations/vercel-setup.md`
+- Bulgarian source verification: `docs/operations/bg-source-verification.md`
 - AI pipeline: `docs/ai/ai-pipeline.md`
 - Testing plan: `docs/testing/test-plan.md`
 - Release process: `docs/operations/release-process.md`
