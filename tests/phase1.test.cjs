@@ -11,8 +11,10 @@ const supabaseDataSource = fs.readFileSync(path.join(root, "src/lib/supabase-dat
 const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
 const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
 const rssIngestionSource = fs.readFileSync(path.join(root, "src/lib/ingestion/rss.ts"), "utf8");
+const storyGenerationSource = fs.readFileSync(path.join(root, "src/lib/ai/story-generation.ts"), "utf8");
 const rssIngestionRoute = fs.readFileSync(path.join(root, "src/app/api/ingestion/rss/route.ts"), "utf8");
 const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
+const aiPipelineDoc = fs.readFileSync(path.join(root, "docs/ai/ai-pipeline.md"), "utf8");
 const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -166,6 +168,19 @@ assert.equal(
 });
 
 [
+  "StoryGenerationInput",
+  "GeneratedStoryDraft",
+  "storyGenerationOutputSchema",
+  "getStoryGenerationSystemPrompt",
+  "buildStoryGenerationUserPrompt",
+  "selectStoryGenerationCandidates",
+  "insufficient_support",
+  "sourceArticleIds",
+].forEach((needle) => {
+  assert.ok(storyGenerationSource.includes(needle), `Story generation contract missing: ${needle}`);
+});
+
+[
   "RSS Ingestion Skeleton",
   "Article Normalization",
   "removing common tracking parameters",
@@ -178,7 +193,18 @@ assert.equal(
   assert.ok(ingestionDoc.includes(needle), `Ingestion plan missing: ${needle}`);
 });
 
+[
+  "Story Generation Flow",
+  "storyGenerationOutputSchema",
+  "editorial_status = draft",
+  "Generated stories are never published directly",
+  "OPENAI_API_KEY",
+].forEach((needle) => {
+  assert.ok(aiPipelineDoc.includes(needle), `AI pipeline plan missing: ${needle}`);
+});
+
 assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingestion token");
+assert.ok(envExample.includes("OPENAI_API_KEY"), "Env example needs OpenAI key");
 
 [
   "create table if not exists markets",
