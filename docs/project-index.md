@@ -20,6 +20,8 @@ Briefly is now following Option B:
 - Testing plan: `docs/testing/test-plan.md`
 - Release process: `docs/operations/release-process.md`
 - Option B rollout: `docs/operations/option-b-rollout.md`
+- Codex agents: `agents/README.md`
+- Agent operating model: `docs/operations/codex-agent-operating-model.md`
 
 ## Working Rule
 

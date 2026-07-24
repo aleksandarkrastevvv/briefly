@@ -16,6 +16,17 @@ const rssIngestionRoute = fs.readFileSync(path.join(root, "src/app/api/ingestion
 const storyGenerationRoute = fs.readFileSync(path.join(root, "src/app/api/ai/stories/route.ts"), "utf8");
 const ingestionDoc = fs.readFileSync(path.join(root, "docs/engineering/ingestion.md"), "utf8");
 const aiPipelineDoc = fs.readFileSync(path.join(root, "docs/ai/ai-pipeline.md"), "utf8");
+const projectIndexDoc = fs.readFileSync(path.join(root, "docs/project-index.md"), "utf8");
+const agentsReadme = fs.readFileSync(path.join(root, "agents/README.md"), "utf8");
+const productAgentDoc = fs.readFileSync(path.join(root, "agents/product-agent.md"), "utf8");
+const designAgentDoc = fs.readFileSync(path.join(root, "agents/design-agent.md"), "utf8");
+const engineeringAgentDoc = fs.readFileSync(path.join(root, "agents/engineering-agent.md"), "utf8");
+const testingAgentDoc = fs.readFileSync(path.join(root, "agents/testing-agent.md"), "utf8");
+const editorialTrustAgentDoc = fs.readFileSync(path.join(root, "agents/editorial-trust-agent.md"), "utf8");
+const agentOperatingModelDoc = fs.readFileSync(
+  path.join(root, "docs/operations/codex-agent-operating-model.md"),
+  "utf8"
+);
 const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
 const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -219,6 +230,49 @@ assert.equal(
   "OPENAI_API_KEY",
 ].forEach((needle) => {
   assert.ok(aiPipelineDoc.includes(needle), `AI pipeline plan missing: ${needle}`);
+});
+
+[
+  "Operating Model",
+  "When To Use Each Agent",
+  "Definition Of Done",
+  "Human Override",
+].forEach((needle) => {
+  assert.ok(agentsReadme.includes(needle), `Agents README missing: ${needle}`);
+});
+
+[
+  productAgentDoc,
+  designAgentDoc,
+  engineeringAgentDoc,
+  testingAgentDoc,
+  editorialTrustAgentDoc,
+].forEach((agentDoc) => {
+  assert.ok(agentDoc.includes("## Mission"), "Agent doc needs a mission");
+  assert.ok(agentDoc.includes("## Use For"), "Agent doc needs use cases");
+  assert.ok(agentDoc.includes("## Definition Of Done"), "Agent doc needs done criteria");
+  assert.ok(agentDoc.includes("Goal:"), "Agent doc needs shared handoff format");
+});
+
+[
+  "Product Agent",
+  "Design Agent",
+  "Engineering Agent",
+  "Testing Agent",
+  "Editorial And Trust Agent",
+  "GitHub Issues",
+  "Handoff Template",
+  "Do not invent sources",
+  "combine imported articles into Briefly-style",
+].forEach((needle) => {
+  assert.ok(agentOperatingModelDoc.includes(needle), `Agent operating model missing: ${needle}`);
+});
+
+[
+  "agents/README.md",
+  "docs/operations/codex-agent-operating-model.md",
+].forEach((needle) => {
+  assert.ok(projectIndexDoc.includes(needle), `Project index missing: ${needle}`);
 });
 
 assert.ok(envExample.includes("INGESTION_API_TOKEN"), "Env example needs ingestion token");
