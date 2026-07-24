@@ -2,6 +2,8 @@
 
 The Phase 1 schema foundation is in `database/001_foundation.sql`.
 
+Initial configuration seed data is in `database/002_seed_markets_sources.sql`.
+
 ## Core Tables
 
 - markets
@@ -29,3 +31,7 @@ The Phase 1 schema foundation is in `database/001_foundation.sql`.
 - Duplicates are prevented by URL and GUID where possible.
 - Source records start inactive until verified.
 - User-owned data requires row-level security.
+
+## Supabase Project
+
+Setup notes live in `docs/operations/supabase-setup.md`.

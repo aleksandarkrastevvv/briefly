@@ -6,6 +6,9 @@ const assert = require("node:assert/strict");
 const root = path.resolve(__dirname, "..");
 const dataSource = fs.readFileSync(path.join(root, "src/lib/seed-data.ts"), "utf8");
 const pageSource = fs.readFileSync(path.join(root, "src/app/page.tsx"), "utf8");
+const supabaseSource = fs.readFileSync(path.join(root, "src/lib/supabase.ts"), "utf8");
+const supabaseServerSource = fs.readFileSync(path.join(root, "src/lib/supabase-server.ts"), "utf8");
+const seedSql = fs.readFileSync(path.join(root, "database/002_seed_markets_sources.sql"), "utf8");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const sql = fs.readFileSync(path.join(root, "database/001_foundation.sql"), "utf8");
 
@@ -84,6 +87,30 @@ for (const source of data.sources) {
   "alter table saved_stories enable row level security",
 ].forEach((needle) => {
   assert.ok(sql.includes(needle), `Migration missing: ${needle}`);
+});
+
+[
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "createClient<Database>",
+].forEach((needle) => {
+  assert.ok(supabaseSource.includes(needle), `Supabase browser client missing: ${needle}`);
+});
+
+[
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "persistSession: false",
+].forEach((needle) => {
+  assert.ok(supabaseServerSource.includes(needle), `Supabase server client missing: ${needle}`);
+});
+
+[
+  "insert into markets",
+  "('BG', 'bg-BG'",
+  "('RS', 'sr-RS'",
+  "requires_verification",
+].forEach((needle) => {
+  assert.ok(seedSql.includes(needle), `Seed SQL missing: ${needle}`);
 });
 
 console.log("Phase 1 validation passed");
