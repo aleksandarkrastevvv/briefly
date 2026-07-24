@@ -4,14 +4,18 @@ const vm = require("node:vm");
 const assert = require("node:assert/strict");
 
 const root = path.resolve(__dirname, "..");
-const dataSource = fs.readFileSync(path.join(root, "data.js"), "utf8");
-const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const dataSource = fs.readFileSync(path.join(root, "src/lib/seed-data.ts"), "utf8");
+const pageSource = fs.readFileSync(path.join(root, "src/app/page.tsx"), "utf8");
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const sql = fs.readFileSync(path.join(root, "database/001_foundation.sql"), "utf8");
 
-const sandbox = { window: {} };
-vm.runInNewContext(dataSource, sandbox);
+const sandbox = {};
+const executableDataSource = dataSource
+  .replace("export const brieflySeed =", "brieflySeed =")
+  .replace(/\s+as const;\s*$/, ";");
+vm.runInNewContext(executableDataSource, sandbox);
 
-const data = sandbox.window.BrieflySeed;
+const data = sandbox.brieflySeed;
 
 assert.equal(data.markets.length, 2, "Phase 1 should ship BG and RS markets");
 assert.equal(
@@ -52,15 +56,22 @@ for (const source of data.sources) {
 }
 
 [
-  "market-select",
-  "home-view",
-  "brief-view",
-  "sources-view",
-  "editorial-view",
-  "studio-view",
-  "story-card-template",
+  "next",
+  "react",
+  "react-dom",
+  "@supabase/supabase-js",
 ].forEach((id) => {
-  assert.ok(html.includes(`id="${id}"`), `Missing #${id}`);
+  assert.ok(packageJson.dependencies[id], `Missing dependency: ${id}`);
+});
+
+[
+  "function StoryCard",
+  "function StudioOutput",
+  "sourceRows.map",
+  "profileOptions.map",
+  "navigator.share",
+].forEach((needle) => {
+  assert.ok(pageSource.includes(needle), `Missing Next.js app marker: ${needle}`);
 });
 
 [
