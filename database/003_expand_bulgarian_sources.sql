@@ -4,6 +4,12 @@
 -- Active = true only for verified RSS/XML feeds or configured HTML parsers.
 -- Important pages without a clean feed remain inactive until a parser is added.
 
+-- Normalize the active set first so old experiments do not stay enabled.
+update sources
+set active = false,
+    updated_at = now()
+where market_code = 'BG';
+
 insert into sources (
   market_code,
   name,
@@ -77,6 +83,28 @@ on conflict (market_code, name) do update set
 
 -- First HTML parser batch for official and high-value Bulgarian pages.
 -- These pages are imported by extracting same-site article links from a known news page.
+update sources
+set
+  active = true,
+  verification_status = 'verified_feed',
+  updated_at = now()
+where market_code = 'BG'
+  and name in (
+    'BTA',
+    'Capital',
+    'Dnevnik',
+    'BNT',
+    'BBC World',
+    'Actualno',
+    'Mediapool',
+    'Sega',
+    '24 Chasa',
+    'Svobodna Evropa',
+    'Ministry of Foreign Affairs',
+    'National Health Insurance Fund',
+    'Varna Municipality'
+  );
+
 update sources
 set
   active = true,
