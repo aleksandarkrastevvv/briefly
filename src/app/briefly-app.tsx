@@ -1091,20 +1091,12 @@ function StoryCard({
 
   return (
     <article className={generated ? "story-card is-generated" : "story-card"}>
-      <div className="story-image">
-        {generated ? (
-          <div className="generated-story-visual" aria-hidden="true">
-            <span>{story.category}</span>
-            <strong>{story.sourceCount}</strong>
-            <small>{sourceText(marketCode, story.sourceCount)}</small>
-          </div>
-        ) : (
+      {!generated && (
+        <div className="story-image">
           <img className="story-img" src={story.image} alt="" />
-        )}
-        <span className="story-badge">
-          {generated ? story.confidenceStatus : copy.sampleBadge}
-        </span>
-      </div>
+          <span className="story-badge">{copy.sampleBadge}</span>
+        </div>
+      )}
       <div className="story-body">
         <div className="story-meta">
           <span>
@@ -1112,7 +1104,12 @@ function StoryCard({
             {"official" in story && story.official ? ` · ${copy.official}` : ""}
             {generated ? ` · ${story.editorialStatus}` : ""}
           </span>
-          <span>{formatTime(marketCode, story.updatedAt)}</span>
+          <span className="story-meta-side">
+            {generated && (
+              <span className="inline-status">{story.confidenceStatus}</span>
+            )}
+            <span>{formatTime(marketCode, story.updatedAt)}</span>
+          </span>
         </div>
         <h2 className="story-headline">{story.headline}</h2>
         <p className="story-description">{story.description}</p>
