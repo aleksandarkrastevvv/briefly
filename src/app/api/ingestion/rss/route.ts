@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const maxItemsPerSource = 30;
-const fetchTimeoutMs = 10_000;
+const fetchTimeoutMs = 20_000;
 
 export async function POST(request: Request) {
   const expectedToken = process.env.INGESTION_API_TOKEN;

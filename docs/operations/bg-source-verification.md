@@ -14,7 +14,7 @@ a parser or access strategy is reviewed.
 | Dnevnik | Verified RSS feed with browser-style request headers | https://www.dnevnik.bg/rss/ |
 | BNT | Verified RSS feed | https://news.bnt.bg/bg/rss/news.xml |
 | BBC World | Verified RSS feed | https://www.bbc.com/news/world/rss.xml |
-| Novinite.com | Verified RSS feed | https://www.novinite.com/services/news_rdf.php |
+| Novinite.com | Paused: live Vercel run returned 403 | https://www.novinite.com/services/news_rdf.php |
 | Actualno | Verified RSS feed | https://www.actualno.com/rss |
 | Mediapool | Verified RSS feed | https://www.mediapool.bg/rss |
 | Sega | Verified RSS feed | https://www.segabg.com/rss/rss20.xml |
@@ -30,27 +30,27 @@ a parser or access strategy is reviewed.
 | Council of Ministers | Configured HTML parser | https://www.gov.bg/bg/prestsentar/novini |
 | President of Bulgaria | Configured HTML parser | https://www.president.bg |
 | Ministry of Foreign Affairs | Verified official RSS feed | https://www.mfa.bg/bg/rss |
-| Ministry of Finance | Configured HTML parser | https://www.minfin.bg/bg/news |
-| Ministry of Interior | Configured HTML parser | https://www.mvr.bg |
+| Ministry of Finance | Paused: live Vercel run returned 403 | https://www.minfin.bg/bg/news |
+| Ministry of Interior | Paused: live Vercel run returned 403/502 | https://www.mvr.bg |
 | Ministry of Health | Configured HTML parser | https://www.mh.government.bg/bg/novini/ |
-| Ministry of Education and Science | Configured HTML parser | https://www.mon.bg |
+| Ministry of Education and Science | Paused: live Vercel run returned 403 | https://www.mon.bg |
 | Ministry of Tourism | Verified RSS page, not direct XML in ingestion check | https://www.tourism.government.bg/bg/rss |
 | Ministry of Agriculture and Food | Verified RSS page, not direct XML in ingestion check | https://www.mzh.government.bg/bg/rss/ |
-| National Revenue Agency / НАП | Configured HTML parser; tested RSS guesses failed from server request | https://nra.bg/wps/portal/nra/actualno |
+| National Revenue Agency / НАП | Paused: live Vercel run failed to fetch | https://nra.bg/wps/portal/nra/actualno |
 | National Social Security Institute / НОИ | Verified official page; WordPress feed endpoints returned 403 | https://www.nssi.bg |
 | National Health Insurance Fund | Verified official RSS feed | https://www.nhif.bg/rss |
-| National Statistical Institute | Configured HTML parser | https://www.nsi.bg |
+| National Statistical Institute | Paused: live Vercel run returned 403 | https://www.nsi.bg |
 | Bulgarian National Bank | Verified official RSS index page | https://www.bnb.bg/AboutUs/PressOffice/PORSS/index.htm |
-| Ministry of Electronic Governance | Configured HTML parser | https://egov.bg/wps/portal/egov |
+| Ministry of Electronic Governance | Paused: live Vercel run timed out | https://egov.bg/wps/portal/egov |
 | Registry Agency | Configured HTML parser | https://portal.registryagency.bg |
-| Public Procurement Agency | Configured HTML parser | https://www2.aop.bg |
+| Public Procurement Agency | Paused: live Vercel run returned 403 | https://www2.aop.bg |
 | Commission for Consumer Protection | Configured HTML parser | https://kzp.bg |
 | Financial Supervision Commission | Configured HTML parser | https://www.fsc.bg |
 | Commission on Protection of Competition | Configured HTML parser | https://www.cpc.bg |
-| Ombudsman of Bulgaria | Configured HTML parser | https://www.ombudsman.bg |
-| Road Infrastructure Agency | Configured HTML parser | https://www.api.bg |
-| Sofia Municipality | Configured HTML parser | https://www.sofia.bg |
-| Plovdiv Municipality | Verified local RSS feed | https://www.plovdiv.bg/feed/ |
+| Ombudsman of Bulgaria | Paused: parser found 0 records in live run | https://www.ombudsman.bg |
+| Road Infrastructure Agency | Paused: live Vercel run timed out | https://www.api.bg |
+| Sofia Municipality | Configured HTML parser tuned to `/w/` article paths | https://www.sofia.bg |
+| Plovdiv Municipality | Paused: live Vercel run returned 403 | https://www.plovdiv.bg/feed/ |
 | Varna Municipality | Verified local RSS feed | https://www.varna.bg/bg/rss |
 | Burgas Municipality | RSS endpoint returned empty content during check | https://www.burgas.bg/bg/rss |
 | Ruse Municipality | Configured HTML parser | https://obshtinaruse.bg |
@@ -59,17 +59,16 @@ a parser or access strategy is reviewed.
 | Pleven Municipality | RSS endpoint returned empty content during check | https://www.pleven.bg/bg/rss |
 | Dobrich Municipality | RSS endpoint returned empty content during check | https://www.dobrich.bg/bg/rss |
 | Blagoevgrad Municipality | Configured HTML parser | https://www.blagoevgrad.bg |
-| Sliven Municipality | Configured HTML parser | https://www.sliven.bg |
+| Sliven Municipality | Paused: parser found 0 records in live run | https://www.sliven.bg |
 | Shumen Municipality | Configured HTML parser | https://www.shumen.bg |
 
-## Active First Run Sources
+## Active RSS Sources
 
 - BTA
 - Capital
 - Dnevnik
 - BNT
 - BBC World
-- Novinite.com
 - Actualno
 - Mediapool
 - Sega
@@ -77,7 +76,6 @@ a parser or access strategy is reviewed.
 - Svobodna Evropa
 - Ministry of Foreign Affairs
 - National Health Insurance Fund
-- Plovdiv Municipality
 - Varna Municipality
 
 These are direct RSS/XML feeds with `verification_status = verified_feed`.
@@ -86,28 +84,33 @@ These are direct RSS/XML feeds with `verification_status = verified_feed`.
 
 - Council of Ministers
 - President of Bulgaria
-- Ministry of Finance
-- Ministry of Interior
 - Ministry of Health
-- Ministry of Education and Science
-- National Revenue Agency / НАП
-- National Statistical Institute
-- Ministry of Electronic Governance
 - Registry Agency
-- Public Procurement Agency
 - Commission for Consumer Protection
 - Financial Supervision Commission
 - Commission on Protection of Competition
-- Ombudsman of Bulgaria
-- Road Infrastructure Agency
 - Sofia Municipality
 - Ruse Municipality
 - Blagoevgrad Municipality
-- Sliven Municipality
 - Shumen Municipality
 
 These are page-based imports with `verification_status = configured_html_parser`.
 The parser imports same-site links that match configured news/path keywords.
+
+## Paused After Live Run
+
+- Novinite.com: 403 from Vercel
+- National Statistical Institute: 403 from Vercel
+- Ministry of Electronic Governance: timeout
+- Plovdiv Municipality: 403 from Vercel
+- Public Procurement Agency: 403 from Vercel
+- National Revenue Agency / НАП: fetch failed
+- Ministry of Finance: 403 from Vercel
+- Ministry of Interior: 403/502 from Vercel
+- Ministry of Education and Science: 403 from Vercel
+- Road Infrastructure Agency: timeout
+- Ombudsman of Bulgaria: 0 imported
+- Sliven Municipality: 0 imported
 
 ## Follow-up
 
