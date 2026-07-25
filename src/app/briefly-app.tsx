@@ -1087,14 +1087,22 @@ function StoryCard({
   onShare: () => void;
   onOpen: () => void;
 }) {
+  const generated = isGeneratedStory(story);
+
   return (
-    <article className="story-card">
+    <article className={generated ? "story-card is-generated" : "story-card"}>
       <div className="story-image">
-        <img className="story-img" src={story.image} alt="" />
+        {generated ? (
+          <div className="generated-story-visual" aria-hidden="true">
+            <span>{story.category}</span>
+            <strong>{story.sourceCount}</strong>
+            <small>{sourceText(marketCode, story.sourceCount)}</small>
+          </div>
+        ) : (
+          <img className="story-img" src={story.image} alt="" />
+        )}
         <span className="story-badge">
-          {isGeneratedStory(story)
-            ? story.confidenceStatus
-            : copy.sampleBadge}
+          {generated ? story.confidenceStatus : copy.sampleBadge}
         </span>
       </div>
       <div className="story-body">
@@ -1102,7 +1110,7 @@ function StoryCard({
           <span>
             {story.category}
             {"official" in story && story.official ? ` · ${copy.official}` : ""}
-            {isGeneratedStory(story) ? ` · ${story.editorialStatus}` : ""}
+            {generated ? ` · ${story.editorialStatus}` : ""}
           </span>
           <span>{formatTime(marketCode, story.updatedAt)}</span>
         </div>
