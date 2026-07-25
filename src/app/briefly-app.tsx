@@ -148,6 +148,23 @@ function isGeneratedStory(story: DisplayStory): story is GeneratedBrieflyStory {
   return "confidenceStatus" in story;
 }
 
+function compareStoriesBySupport(left: DisplayStory, right: DisplayStory) {
+  if (right.sourceCount !== left.sourceCount) {
+    return right.sourceCount - left.sourceCount;
+  }
+
+  const leftTime = Date.parse(left.updatedAt);
+  const rightTime = Date.parse(right.updatedAt);
+
+  return (Number.isNaN(rightTime) ? 0 : rightTime) - (Number.isNaN(leftTime) ? 0 : leftTime);
+}
+
+function supportedBrieflyStories<T extends DisplayStory>(stories: readonly T[]) {
+  return stories
+    .filter((story) => story.sourceCount >= 2)
+    .sort(compareStoriesBySupport);
+}
+
 export default function BrieflyApp({
   homepageData,
 }: {
@@ -175,12 +192,15 @@ export default function BrieflyApp({
   const market = getMarket(state.market);
   const copy = getUiCopy(state.market);
   const dailyBrief = getDailyBrief(state.market);
-  const seedStories = getStories(state.market);
+  const seedStories = useMemo(
+    () => supportedBrieflyStories(getStories(state.market)),
+    [state.market],
+  );
   const generatedStories = useMemo(
     () =>
-      homepageData.generatedStories
-        .filter((story) => story.market === state.market)
-        .slice(0, 8),
+      supportedBrieflyStories(
+        homepageData.generatedStories.filter((story) => story.market === state.market),
+      ).slice(0, 8),
     [homepageData.generatedStories, state.market],
   );
   const stories: readonly DisplayStory[] =

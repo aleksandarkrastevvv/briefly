@@ -79,7 +79,7 @@ export const storyGenerationOutputSchema = {
           },
           sourceArticleIds: {
             type: "array",
-            minItems: 1,
+            minItems: 2,
             items: { type: "string", minLength: 1 },
           },
         },
@@ -119,10 +119,12 @@ export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
       generatedAt: input.generatedAt,
       rules: [
         "Group multiple articles about the same event into one story.",
+        "Every story must be supported by at least two source articles.",
+        "Prioritize stories with the highest number of supporting sources.",
         "Use three key points exactly.",
         "Keep each summary short enough for a daily brief.",
         "Return no story if articles are too weak or unrelated.",
-        "Every story must include at least one sourceArticleIds value.",
+        "Every story must include at least two sourceArticleIds values.",
       ],
       articles,
     },
@@ -177,6 +179,9 @@ function parseGeneratedStoryDraft(value: unknown, index: number): GeneratedStory
   );
   if (sourceArticleIds.length < 1) {
     throw new Error(`Story ${index + 1} must preserve source article ids.`);
+  }
+  if (sourceArticleIds.length < 2) {
+    throw new Error(`Story ${index + 1} must include at least two source article ids.`);
   }
 
   return {

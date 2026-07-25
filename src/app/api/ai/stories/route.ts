@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     const sourceArticleIds = story.sourceArticleIds.filter((id) =>
       candidateArticles.some((article) => article.id === id),
     );
-    if (sourceArticleIds.length === 0) continue;
+    if (sourceArticleIds.length < 2) continue;
 
     const sourceArticles = candidateArticles.filter((article) =>
       sourceArticleIds.includes(article.id),
@@ -160,6 +160,8 @@ export async function POST(request: Request) {
       confidenceStatus: story.confidenceStatus,
     });
   }
+
+  savedStories.sort((left, right) => right.sourceCount - left.sourceCount);
 
   return NextResponse.json({
     marketCode,
