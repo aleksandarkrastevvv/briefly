@@ -476,6 +476,41 @@ legend {
   object-fit: cover;
 }
 
+.generated-story-visual {
+  display: grid;
+  min-height: 100%;
+  align-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(19, 93, 83, 0.94), rgba(21, 21, 21, 0.88)),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0,
+      transparent 24px,
+      rgba(255, 255, 255, 0.12) 25px,
+      rgba(255, 255, 255, 0.12) 27px
+    );
+}
+
+.generated-story-visual span {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.generated-story-visual strong {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 7vw, 7rem);
+  line-height: 0.9;
+}
+
+.generated-story-visual small {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
 .story-badge {
   position: absolute;
   left: var(--space-3);
@@ -1048,6 +1083,10 @@ legend {
   .story-card {
     display: grid;
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+
+  .story-card.is-generated {
+    grid-template-columns: minmax(240px, 0.62fr) minmax(0, 1.38fr);
   }
 
   .story-image {
