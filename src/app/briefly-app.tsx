@@ -418,13 +418,12 @@ export default function BrieflyApp({
       if (!response.ok) {
         throw new Error(
           typeof payload.error === "string"
-            ? payload.error
+            ? [payload.error, payload.detail].filter(Boolean).join(" ")
             : "Story generation request failed.",
         );
       }
 
       setStoryGenerationResult(payload as StoryGenerationResult);
-      window.setTimeout(() => window.location.reload(), 900);
     } catch (error) {
       setStoryGenerationError(
         error instanceof Error
@@ -986,6 +985,12 @@ export default function BrieflyApp({
                         {storyGenerationResult.candidateCount} articles
                       </span>
                     </div>
+                    {storyGenerationResult.generatedCount > 0 && (
+                      <p className="empty-state">
+                        Story drafts were saved. Refresh the page to show them
+                        in Today and Brief.
+                      </p>
+                    )}
                     <div className="operator-list">
                       {storyGenerationResult.stories.length === 0 && (
                         <p className="empty-state">
