@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   architectureNotes,
-  getDailyBrief,
   getMarket,
   getStories,
   getUiCopy,
@@ -215,7 +214,6 @@ export default function BrieflyApp({
 
   const market = getMarket(state.market);
   const copy = getUiCopy(state.market);
-  const dailyBrief = getDailyBrief(state.market);
   const seedStories = useMemo(
     () => supportedBrieflyStories(getStories(state.market)),
     [state.market],
@@ -229,13 +227,16 @@ export default function BrieflyApp({
       ).slice(0, 8),
     [homepageData.generatedStories, state.market],
   );
-  const stories: readonly DisplayStory[] =
+  const stories: readonly DisplayStory[] = generatedStories;
+  const studioStories: readonly DisplayStory[] =
     generatedStories.length > 0 ? generatedStories : seedStories;
-  const storyMode = generatedStories.length > 0 ? "generated" : "seed";
-  const estimatedMinutes = Math.max(3, Math.min(8, Math.ceil(stories.length * 0.8)));
+  const hasStories = stories.length > 0;
+  const estimatedMinutes = hasStories
+    ? Math.max(3, Math.min(8, Math.ceil(stories.length * 0.8)))
+    : 0;
   const storyIndex = Math.min(
     Math.max(state.progress[state.market] ?? 0, 0),
-    stories.length - 1,
+    Math.max(stories.length - 1, 0),
   );
   const activeStory = stories[storyIndex];
   const completedCount = Math.min(
@@ -243,7 +244,7 @@ export default function BrieflyApp({
     stories.length,
   );
   const selectedStudioStory =
-    stories.find((story) => story.id === studioStoryId) ?? stories[0];
+    studioStories.find((story) => story.id === studioStoryId) ?? studioStories[0];
 
   const sourceRows = useMemo(
     () =>
@@ -344,7 +345,7 @@ export default function BrieflyApp({
     updateState({
       progress: {
         ...state.progress,
-        [state.market]: Math.min(Math.max(nextIndex, 0), stories.length - 1),
+        [state.market]: Math.min(Math.max(nextIndex, 0), Math.max(stories.length - 1, 0)),
       },
     });
     setOpenStoryId(null);
@@ -360,6 +361,8 @@ export default function BrieflyApp({
   }
 
   function nextStory() {
+    if (!hasStories) return;
+
     const isLast = storyIndex === stories.length - 1;
     updateState({
       completed: {
@@ -553,7 +556,7 @@ export default function BrieflyApp({
                   </p>
                   <h1>{greetingForHour(state.market)}</h1>
                   <p className="hero-subtitle">{market.dailyTitle}</p>
-                  {storyMode === "generated" && (
+                  {hasStories && (
                     <p className="live-note">Built from imported articles</p>
                   )}
                 </div>
@@ -565,9 +568,7 @@ export default function BrieflyApp({
                   </div>
                   <div>
                     <span>
-                      {storyMode === "generated"
-                        ? estimatedMinutes
-                        : dailyBrief.estimatedMinutes}
+                      {estimatedMinutes}
                     </span>
                     <small>{copy.minutesLabel}</small>
                   </div>
@@ -596,7 +597,9 @@ export default function BrieflyApp({
               <div className="progress-track" aria-label="Daily brief progress">
                 <span
                   style={{
-                    width: `${Math.round((completedCount / stories.length) * 100)}%`,
+                    width: hasStories
+                      ? `${Math.round((completedCount / stories.length) * 100)}%`
+                      : "0%",
                   }}
                 />
               </div>
@@ -656,70 +659,94 @@ export default function BrieflyApp({
 
           {view === "brief" && (
             <section className="view is-active">
-              <div className="brief-toolbar">
-                <p className="quiet">
-                  {copy.storyPosition} {storyIndex + 1} {copy.of} {stories.length}
-                </p>
-                <div className="brief-dots" aria-label="Story progress">
-                  {stories.map((story, index) => (
-                    <button
-                      key={story.id}
-                      className={index === storyIndex ? "dot is-active" : "dot"}
-                      type="button"
-                      aria-label={`${copy.storyPosition} ${index + 1}`}
-                      onClick={() => setStoryIndex(index)}
+              {!hasStories ? (
+                <section className="completion-state" aria-live="polite">
+                  <h2>
+                    {state.market === "RS"
+                      ? "Nema svežeg brifa"
+                      : "Няма свеж бриф"}
+                  </h2>
+                  <p>
+                    {state.market === "RS"
+                      ? "Briefly prikazuje samo stvarne priče iz poslednjih 36 sati. Pokreni ingestion, pa generiši dnevne priče."
+                      : "Briefly показва само реални истории от последните 36 часа. Пусни ingestion, после генерирай дневните истории."}
+                  </p>
+                  <button
+                    className="primary-action"
+                    type="button"
+                    onClick={() => setView("operator")}
+                  >
+                    Operator
+                  </button>
+                </section>
+              ) : (
+                <>
+                  <div className="brief-toolbar">
+                    <p className="quiet">
+                      {copy.storyPosition} {storyIndex + 1} {copy.of} {stories.length}
+                    </p>
+                    <div className="brief-dots" aria-label="Story progress">
+                      {stories.map((story, index) => (
+                        <button
+                          key={story.id}
+                          className={index === storyIndex ? "dot is-active" : "dot"}
+                          type="button"
+                          aria-label={`${copy.storyPosition} ${index + 1}`}
+                          onClick={() => setStoryIndex(index)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    className="story-stage"
+                    aria-live="polite"
+                    onTouchStart={(event) =>
+                      setTouchStartX(event.changedTouches[0].screenX)
+                    }
+                    onTouchEnd={(event) => {
+                      if (touchStartX === null) return;
+                      const delta = event.changedTouches[0].screenX - touchStartX;
+                      if (Math.abs(delta) < 50) return;
+                      if (delta < 0) nextStory();
+                      if (delta > 0) setStoryIndex(storyIndex - 1);
+                      setTouchStartX(null);
+                    }}
+                  >
+                    <StoryCard
+                      copy={copy}
+                      marketCode={state.market}
+                      story={activeStory}
+                      isSaved={state.savedStoryIds.includes(activeStory.id)}
+                      isOpen={openStoryId === activeStory.id}
+                      profile={state.profile}
+                      onSave={() => toggleSaved(activeStory.id)}
+                      onShare={() => void shareStory(activeStory)}
+                      onOpen={() =>
+                        setOpenStoryId((current) =>
+                          current === activeStory.id ? null : activeStory.id,
+                        )
+                      }
                     />
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              <div
-                className="story-stage"
-                aria-live="polite"
-                onTouchStart={(event) =>
-                  setTouchStartX(event.changedTouches[0].screenX)
-                }
-                onTouchEnd={(event) => {
-                  if (touchStartX === null) return;
-                  const delta = event.changedTouches[0].screenX - touchStartX;
-                  if (Math.abs(delta) < 50) return;
-                  if (delta < 0) nextStory();
-                  if (delta > 0) setStoryIndex(storyIndex - 1);
-                  setTouchStartX(null);
-                }}
-              >
-                <StoryCard
-                  copy={copy}
-                  marketCode={state.market}
-                  story={activeStory}
-                  isSaved={state.savedStoryIds.includes(activeStory.id)}
-                  isOpen={openStoryId === activeStory.id}
-                  profile={state.profile}
-                  onSave={() => toggleSaved(activeStory.id)}
-                  onShare={() => void shareStory(activeStory)}
-                  onOpen={() =>
-                    setOpenStoryId((current) =>
-                      current === activeStory.id ? null : activeStory.id,
-                    )
-                  }
-                />
-              </div>
+                  <div className="brief-controls">
+                    <button
+                      className="secondary-action"
+                      type="button"
+                      disabled={storyIndex === 0}
+                      onClick={() => setStoryIndex(storyIndex - 1)}
+                    >
+                      {copy.previous}
+                    </button>
+                    <button className="primary-action" type="button" onClick={nextStory}>
+                      {storyIndex === stories.length - 1 ? copy.completedTitle : copy.next}
+                    </button>
+                  </div>
+                </>
+              )}
 
-              <div className="brief-controls">
-                <button
-                  className="secondary-action"
-                  type="button"
-                  disabled={storyIndex === 0}
-                  onClick={() => setStoryIndex(storyIndex - 1)}
-                >
-                  {copy.previous}
-                </button>
-                <button className="primary-action" type="button" onClick={nextStory}>
-                  {storyIndex === stories.length - 1 ? copy.completedTitle : copy.next}
-                </button>
-              </div>
-
-              {completedCount >= stories.length && (
+              {hasStories && completedCount >= stories.length && (
                 <section className="completion-state">
                   <h2>{copy.completedTitle}</h2>
                   <p>{copy.completedCopy}</p>
@@ -1074,7 +1101,7 @@ export default function BrieflyApp({
                     value={selectedStudioStory.id}
                     onChange={(event) => setStudioStoryId(event.target.value)}
                   >
-                    {stories.map((story) => (
+                    {studioStories.map((story) => (
                       <option key={story.id} value={story.id}>
                         {story.headline}
                       </option>
