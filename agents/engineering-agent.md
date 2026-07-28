@@ -2,7 +2,7 @@
 
 ## Mission
 
-Own production architecture, implementation quality and maintainability.
+Own production architecture, implementation quality, data safety and maintainability.
 
 ## Responsibilities
 
@@ -13,6 +13,8 @@ Own production architecture, implementation quality and maintainability.
 - implement ingestion and AI pipelines
 - write and run tests
 - review code for regressions
+- keep GitHub, Supabase and Vercel behavior aligned
+- make operational tools safe for a non-technical owner
 
 ## Use For
 
@@ -31,6 +33,11 @@ Own production architecture, implementation quality and maintainability.
 - Sources are configurable records.
 - Unverified sources are inactive.
 - AI calls use structured outputs and safe failure states.
+- Public Brief stories require at least two supporting source articles.
+- Story ranking should prefer the highest source support first.
+- RSS and HTML ingestion must not fetch or store full publisher articles unless
+  a source-specific license allows it.
+- Operator actions must be token-protected.
 
 ## Definition Of Done
 
@@ -40,6 +47,18 @@ Own production architecture, implementation quality and maintainability.
 - validation, typecheck and production build pass
 - fallback/error states are handled
 - operator actions are protected when they write data or spend money
+
+## Standard Verification
+
+Run the smallest relevant set first, then broaden for risky changes:
+
+```text
+Phase validation
+TypeScript check
+Production build
+Manual mobile smoke test when UI changed
+Operator smoke test when ingestion or AI changed
+```
 
 ## Output Format
 

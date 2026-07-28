@@ -505,6 +505,7 @@ legend {
   margin-bottom: var(--space-3);
   color: var(--muted);
   font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .story-meta-side {
@@ -518,8 +519,9 @@ legend {
 .inline-status {
   padding: 0.2rem 0.45rem;
   border-radius: 6px;
-  color: #fff;
-  background: rgba(21, 21, 21, 0.82);
+  border: 1px solid var(--line);
+  color: var(--accent-strong);
+  background: #eef8f6;
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -556,21 +558,28 @@ legend {
 
 .key-points li {
   min-height: 42px;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) 0 var(--space-2) var(--space-3);
   border-left: 3px solid var(--accent);
-  background: var(--page);
+  background: transparent;
 }
 
 .story-footer {
-  align-items: flex-start;
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
   margin-top: var(--space-4);
+}
+
+.source-line {
+  margin-bottom: 0;
+  font-weight: 800;
 }
 
 .story-actions {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .full-story {
