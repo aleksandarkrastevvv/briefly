@@ -2,7 +2,7 @@
 
 ## Mission
 
-Own Briefly’s user experience, visual system and accessibility.
+Own Briefly's mobile-first user experience, visual system and accessibility.
 
 ## Responsibilities
 
@@ -12,6 +12,9 @@ Own Briefly’s user experience, visual system and accessibility.
 - review story cards and full story layouts
 - review AI Studio outputs
 - check accessibility and responsive behavior
+- compare interaction patterns against products such as Particle, Apple News and
+  Google News without copying their visual identity
+- protect reading clarity on small screens
 
 ## Use For
 
@@ -23,12 +26,24 @@ Own Briefly’s user experience, visual system and accessibility.
 
 ## Must Enforce
 
+- mobile first means the phone layout is the primary product
 - premium consumer feel
 - calm, scannable hierarchy
 - no dashboard clutter in the consumer app
 - no endless-feed pattern on Home
 - text must not overflow containers
+- generated stories must be text-first and must not be hidden behind decorative visuals
+- buttons and tabs must be comfortable on touch devices
 - reduced-motion support
+
+## Mobile QA Rules
+
+- The main action should be visible without horizontal scrolling.
+- Story headline, summary and sources must remain readable on a phone.
+- The Brief flow should work one story at a time.
+- Navigation labels must fit or gracefully wrap.
+- No image or visual block may cover story text.
+- Error, loading and empty states must be readable on mobile.
 
 ## Definition Of Done
 
