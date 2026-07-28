@@ -27,6 +27,8 @@ type ViewName =
 type SourceFilter = "all" | "official" | "needs-feed" | "active";
 type DisplayStory = BrieflyStory | GeneratedBrieflyStory;
 
+const storyFreshnessWindowHours = 36;
+
 type IngestionResult = {
   plannedSources: number;
   results: Array<{
@@ -177,6 +179,16 @@ function supportedBrieflyStories<T extends DisplayStory>(stories: readonly T[]) 
     .sort(compareStoriesBySupport);
 }
 
+function freshStories<T extends DisplayStory>(stories: readonly T[], now = new Date()) {
+  const cutoffTime = now.getTime() - storyFreshnessWindowHours * 60 * 60 * 1000;
+
+  return stories.filter((story) => {
+    const storyTime = Date.parse(story.updatedAt);
+
+    return !Number.isNaN(storyTime) && storyTime >= cutoffTime;
+  });
+}
+
 export default function BrieflyApp({
   homepageData,
 }: {
@@ -211,7 +223,9 @@ export default function BrieflyApp({
   const generatedStories = useMemo(
     () =>
       supportedBrieflyStories(
-        homepageData.generatedStories.filter((story) => story.market === state.market),
+        freshStories(
+          homepageData.generatedStories.filter((story) => story.market === state.market),
+        ),
       ).slice(0, 8),
     [homepageData.generatedStories, state.market],
   );

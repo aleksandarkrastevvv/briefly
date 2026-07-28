@@ -268,6 +268,25 @@ assert.equal(
 });
 
 [
+  "storyFreshnessWindowHours = 36",
+  "Only create stories from articles published in the last",
+  "publicationTime >= cutoffTime",
+].forEach((needle) => {
+  assert.ok(
+    storyGenerationSource.includes(needle),
+    `Story generation freshness rule missing: ${needle}`
+  );
+});
+
+[
+  "storyFreshnessWindowHours = 36",
+  "freshStories",
+  "storyTime >= cutoffTime",
+].forEach((needle) => {
+  assert.ok(appSource.includes(needle), `Brief display freshness rule missing: ${needle}`);
+});
+
+[
   "Operating Model",
   "When To Use Each Agent",
   "Definition Of Done",

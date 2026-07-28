@@ -1,5 +1,7 @@
 import type { MarketCode } from "@/lib/briefly";
 
+export const storyFreshnessWindowHours = 36;
+
 export type StoryGenerationArticle = {
   id: string;
   marketCode: MarketCode;
@@ -100,6 +102,12 @@ export function getStoryGenerationSystemPrompt() {
 }
 
 export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
+  const generatedAtTime = Date.parse(input.generatedAt);
+  const freshnessCutoff = Number.isNaN(generatedAtTime)
+    ? null
+    : new Date(
+        generatedAtTime - storyFreshnessWindowHours * 60 * 60 * 1000,
+      ).toISOString();
   const articles = input.articles.map((article, index) => ({
     index: index + 1,
     id: article.id,
@@ -117,8 +125,11 @@ export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
       marketCode: input.marketCode,
       language: input.language,
       generatedAt: input.generatedAt,
+      freshnessWindowHours: storyFreshnessWindowHours,
+      freshnessCutoff,
       rules: [
         "Group multiple articles about the same event into one story.",
+        `Only create stories from articles published in the last ${storyFreshnessWindowHours} hours.`,
         "Every story must be supported by at least two source articles.",
         "Prioritize stories with the highest number of supporting sources.",
         "Use three key points exactly.",
@@ -136,9 +147,21 @@ export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
 export function selectStoryGenerationCandidates(
   articles: StoryGenerationArticle[],
   limit = 80,
+  now = new Date(),
 ) {
+  const cutoffTime = now.getTime() - storyFreshnessWindowHours * 60 * 60 * 1000;
+
   return articles
-    .filter((article) => article.title && article.sourceUrl)
+    .filter((article) => {
+      const publicationTime = Date.parse(article.publicationDate ?? "");
+
+      return (
+        article.title &&
+        article.sourceUrl &&
+        !Number.isNaN(publicationTime) &&
+        publicationTime >= cutoffTime
+      );
+    })
     .sort((left, right) => {
       const leftTime = Date.parse(left.publicationDate ?? "");
       const rightTime = Date.parse(right.publicationDate ?? "");
