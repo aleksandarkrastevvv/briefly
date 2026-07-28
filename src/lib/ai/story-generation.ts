@@ -11,6 +11,7 @@ export type StoryGenerationArticle = {
   excerpt: string | null;
   category: string | null;
   publicationDate: string | null;
+  importedAt: string | null;
 };
 
 export type StoryGenerationInput = {
@@ -117,6 +118,7 @@ export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
     excerpt: article.excerpt,
     category: article.category,
     publicationDate: article.publicationDate,
+    importedAt: article.importedAt,
   }));
 
   return JSON.stringify(
@@ -129,7 +131,7 @@ export function buildStoryGenerationUserPrompt(input: StoryGenerationInput) {
       freshnessCutoff,
       rules: [
         "Group multiple articles about the same event into one story.",
-        `Only create stories from articles published in the last ${storyFreshnessWindowHours} hours.`,
+        `Only create stories from articles published or imported in the last ${storyFreshnessWindowHours} hours.`,
         "Every story must be supported by at least two source articles.",
         "Prioritize stories with the highest number of supporting sources.",
         "Use three key points exactly.",
@@ -153,22 +155,30 @@ export function selectStoryGenerationCandidates(
 
   return articles
     .filter((article) => {
-      const publicationTime = Date.parse(article.publicationDate ?? "");
+      const articleTime = storyArticleTime(article);
 
       return (
         article.title &&
         article.sourceUrl &&
-        !Number.isNaN(publicationTime) &&
-        publicationTime >= cutoffTime
+        articleTime !== null &&
+        articleTime >= cutoffTime
       );
     })
     .sort((left, right) => {
-      const leftTime = Date.parse(left.publicationDate ?? "");
-      const rightTime = Date.parse(right.publicationDate ?? "");
+      const leftTime = storyArticleTime(left);
+      const rightTime = storyArticleTime(right);
 
-      return (Number.isNaN(rightTime) ? 0 : rightTime) - (Number.isNaN(leftTime) ? 0 : leftTime);
+      return (rightTime ?? 0) - (leftTime ?? 0);
     })
     .slice(0, limit);
+}
+
+function storyArticleTime(article: StoryGenerationArticle) {
+  const publicationTime = Date.parse(article.publicationDate ?? "");
+  if (!Number.isNaN(publicationTime)) return publicationTime;
+
+  const importedTime = Date.parse(article.importedAt ?? "");
+  return Number.isNaN(importedTime) ? null : importedTime;
 }
 
 export function parseStoryGenerationOutput(value: unknown): StoryGenerationOutput {

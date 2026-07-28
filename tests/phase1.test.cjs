@@ -269,8 +269,9 @@ assert.equal(
 
 [
   "storyFreshnessWindowHours = 36",
-  "Only create stories from articles published in the last",
-  "publicationTime >= cutoffTime",
+  "Only create stories from articles published or imported in the last",
+  "storyArticleTime",
+  "articleTime >= cutoffTime",
 ].forEach((needle) => {
   assert.ok(
     storyGenerationSource.includes(needle),
