@@ -134,6 +134,18 @@ function sourceText(marketCode: MarketCode, sourceCount: number) {
   return sourceCount === 1 ? copy.oneSource : copy.sourceCount;
 }
 
+function confidenceText(marketCode: MarketCode, status: string) {
+  if (marketCode === "RS") {
+    return status === "needs_review" ? "Proverava se" : "Nedovoljno potvrđeno";
+  }
+
+  return status === "needs_review" ? "Проверява се" : "Недостатъчно потвърдено";
+}
+
+function sourcesHeading(marketCode: MarketCode) {
+  return marketCode === "RS" ? "Izvori" : "Източници";
+}
+
 function meaningForProfile(story: DisplayStory, profile: string[]) {
   const meanings = story.meansForMe as Record<string, string>;
   const matchedProfile = profile.find((item) => meanings[item]);
@@ -1108,6 +1120,7 @@ function StoryCard({
   onOpen: () => void;
 }) {
   const generated = isGeneratedStory(story);
+  const sourceSupport = `${story.sourceCount} ${sourceText(marketCode, story.sourceCount)}`;
 
   return (
     <article className={generated ? "story-card is-generated" : "story-card"}>
@@ -1119,14 +1132,12 @@ function StoryCard({
       )}
       <div className="story-body">
         <div className="story-meta">
-          <span>
-            {story.category}
-            {"official" in story && story.official ? ` · ${copy.official}` : ""}
-            {generated ? ` · ${story.editorialStatus}` : ""}
-          </span>
+          <span>{story.category}</span>
           <span className="story-meta-side">
             {generated && (
-              <span className="inline-status">{story.confidenceStatus}</span>
+              <span className="inline-status">
+                {confidenceText(marketCode, story.confidenceStatus)}
+              </span>
             )}
             <span>{formatTime(marketCode, story.updatedAt)}</span>
           </span>
@@ -1144,18 +1155,18 @@ function StoryCard({
         </section>
         <div className="story-footer">
           <p className="source-line">
-            {story.sources.join(", ")} · {story.sourceCount}{" "}
-            {sourceText(marketCode, story.sourceCount)}
+            {sourceSupport}
+            {"official" in story && story.official ? ` · ${copy.official}` : ""}
           </p>
           <div className="story-actions">
+            <button className="primary-action" type="button" onClick={onOpen}>
+              {copy.openFull}
+            </button>
             <button className="icon-action" type="button" onClick={onSave}>
               {isSaved ? copy.saved : copy.save}
             </button>
             <button className="icon-action" type="button" onClick={onShare}>
               {copy.share}
-            </button>
-            <button className="text-action" type="button" onClick={onOpen}>
-              {copy.openFull}
             </button>
           </div>
         </div>
@@ -1176,6 +1187,10 @@ function StoryCard({
             <section>
               <h3>{marketCode === "RS" ? "Šta sledi" : "Какво следва"}</h3>
               <p>{story.next}</p>
+            </section>
+            <section>
+              <h3>{sourcesHeading(marketCode)}</h3>
+              <p>{story.sources.join(", ")}</p>
             </section>
             <section>
               <h3>AI Q&A</h3>
