@@ -283,6 +283,8 @@ assert.equal(
   "storyFreshnessWindowHours = 36",
   "freshStories",
   "storyTime >= cutoffTime",
+  "const stories: readonly DisplayStory[] = generatedStories",
+  "Няма свеж бриф",
 ].forEach((needle) => {
   assert.ok(appSource.includes(needle), `Brief display freshness rule missing: ${needle}`);
 });
