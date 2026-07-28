@@ -24,6 +24,7 @@ type RawArticleRow = {
   title: string;
   original_url: string;
   publication_date: string | null;
+  imported_at: string | null;
   excerpt: string | null;
   category: string | null;
   sources: { name: string; website_url: string } | null;
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   const { data: articleData, error: articleError } = await supabase
     .from("raw_articles")
     .select(
-      "id,market_code,source_id,title,original_url,publication_date,excerpt,category,sources(name,website_url)",
+      "id,market_code,source_id,title,original_url,publication_date,imported_at,excerpt,category,sources(name,website_url)",
     )
     .eq("market_code", marketCode)
     .order("publication_date", { ascending: false, nullsFirst: false })
@@ -193,6 +194,7 @@ function toStoryGenerationArticle(article: RawArticleRow): StoryGenerationArticl
     excerpt: article.excerpt,
     category: article.category,
     publicationDate: article.publication_date,
+    importedAt: article.imported_at,
   };
 }
 
