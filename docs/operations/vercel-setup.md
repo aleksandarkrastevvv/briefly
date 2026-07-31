@@ -62,6 +62,8 @@ Add these in Vercel Project Settings:
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SERVICE_ROLE_KEY
+INGESTION_API_TOKEN
+CRON_SECRET
 OPENAI_API_KEY
 ```
 
@@ -75,8 +77,33 @@ Keep these private:
 
 ```text
 SUPABASE_SERVICE_ROLE_KEY
+INGESTION_API_TOKEN
+CRON_SECRET
 OPENAI_API_KEY
 ```
+
+`CRON_SECRET` can be any long random password. Do not reuse the Supabase service
+role key or the OpenAI key.
+
+## Scheduled Morning Run
+
+Vercel automatically calls:
+
+```text
+/api/cron/daily-brief
+```
+
+The schedule is:
+
+```text
+30 4 * * *
+```
+
+Vercel reads this as UTC. That means 07:30 in Sofia during summer time and 06:30
+in Sofia during winter time.
+
+The daily route imports fresh articles first, then generates Briefly stories for
+Bulgaria. It only runs on production deployments.
 
 ## Deployment Flow
 
