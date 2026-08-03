@@ -343,6 +343,9 @@ export default function BrieflyApp({
 
   useEffect(() => {
     if (!isOfficialSite) return;
+    setState((current) =>
+      current.market === "BG" ? current : { ...current, market: "BG" },
+    );
     setView("home");
     setProfileOpen(false);
     setOpenStoryId(null);
@@ -532,25 +535,27 @@ export default function BrieflyApp({
             </span>
           </button>
 
-          <label className="market-switcher">
-            <span>{copy.marketLabel}</span>
-            <select
-              value={state.market}
-              aria-label="Select market"
-              onChange={(event) => {
-                updateState({ market: event.target.value as MarketCode });
-                setOpenStoryId(null);
-                setSelectedStoryId(null);
-                setStudioStoryId(null);
-              }}
-            >
-              {markets.map((item) => (
-                <option key={item.code} value={item.code}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!isOfficialSite && (
+            <label className="market-switcher">
+              <span>{copy.marketLabel}</span>
+              <select
+                value={state.market}
+                aria-label="Select market"
+                onChange={(event) => {
+                  updateState({ market: event.target.value as MarketCode });
+                  setOpenStoryId(null);
+                  setSelectedStoryId(null);
+                  setStudioStoryId(null);
+                }}
+              >
+                {markets.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </header>
 
         {!isOfficialSite && (
@@ -1276,10 +1281,16 @@ function Splash({ visible }: { visible: boolean }) {
 
 function getStoryVisualImages(story: DisplayStory) {
   if ("visualImages" in story && Array.isArray(story.visualImages)) {
-    return story.visualImages.filter(Boolean).slice(0, 4);
+    return story.visualImages
+      .filter((image) => image && !isLegacySeedVisual(image))
+      .slice(0, 4);
   }
 
-  return [story.image].filter(Boolean);
+  return [story.image].filter((image) => image && !isLegacySeedVisual(image));
+}
+
+function isLegacySeedVisual(image: string) {
+  return image.startsWith("/assets/bg-") || image.startsWith("/assets/rs-");
 }
 
 function StoryVisual({
@@ -1413,8 +1424,7 @@ function StoryCard({
           </div>
         )}
 
-        <section className="story-section">
-          <h3>AI резюме</h3>
+        <section className="story-section summary-section">
           <p className="story-description">{story.description}</p>
         </section>
 

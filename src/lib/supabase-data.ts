@@ -290,7 +290,7 @@ export async function getHomepageData(): Promise<HomepageData> {
           updatedAt:
             story.latest_update_at ?? story.earliest_publication_at ?? story.created_at,
           image: visualImages[0] ?? fallbackImage,
-          visualImages: visualImages.length > 0 ? visualImages : [fallbackImage],
+          visualImages: visualImages.length > 0 ? visualImages : [],
           sample: false,
           official,
           confidenceStatus: story.confidence_status,
@@ -322,25 +322,8 @@ function readThreeKeyPoints(value: unknown): [string, string, string] {
 }
 
 function imageForCategory(marketCode: MarketCode, category: string) {
-  const normalized = category.toLowerCase();
+  void marketCode;
+  void category;
 
-  if (normalized.includes("econom") || normalized.includes("иконом")) {
-    return marketCode === "RS" ? "/assets/rs-economy.png" : "/assets/bg-economy.png";
-  }
-
-  if (normalized.includes("health") || normalized.includes("здрав")) {
-    return marketCode === "RS" ? "/assets/rs-health.png" : "/assets/bg-health.png";
-  }
-
-  if (normalized.includes("energy") || normalized.includes("енерг")) {
-    return marketCode === "RS" ? "/assets/rs-energy.png" : "/assets/bg-energy.png";
-  }
-
-  if (normalized.includes("world") || normalized.includes("свят")) {
-    return marketCode === "RS" ? "/assets/rs-world.png" : "/assets/bg-world.png";
-  }
-
-  return marketCode === "RS"
-    ? "/assets/rs-transport.png"
-    : "/assets/bg-transport.png";
+  return "";
 }
