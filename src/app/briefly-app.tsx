@@ -190,8 +190,10 @@ function freshStories<T extends DisplayStory>(stories: readonly T[], now = new D
 
 export default function BrieflyApp({
   homepageData,
+  isOfficialSite,
 }: {
   homepageData: HomepageData;
+  isOfficialSite?: boolean;
 }) {
   const [state, setState] = useState<AppState>(defaultState);
   const [view, setView] = useState<ViewName>("home");
@@ -336,6 +338,13 @@ export default function BrieflyApp({
     const timeout = window.setTimeout(() => setShowSplash(false), 2400);
     return () => window.clearTimeout(timeout);
   }, []);
+
+  useEffect(() => {
+    if (!isOfficialSite) return;
+    setView("home");
+    setProfileOpen(false);
+    setOpenStoryId(null);
+  }, [isOfficialSite]);
 
   function updateState(nextState: Partial<AppState>) {
     setState((current) => ({ ...current, ...nextState }));
@@ -499,11 +508,12 @@ export default function BrieflyApp({
   const adminTabs = tabs.filter(([tabView]) =>
     ["imported", "editorial"].includes(tabView),
   );
+  const visibleHomeStories = isOfficialSite ? stories : stories.slice(0, 5);
 
   return (
     <>
       <Splash visible={showSplash} />
-      <div className="app-shell">
+      <div className={isOfficialSite ? "app-shell is-official" : "app-shell"}>
         <header className="topbar">
           <button
             className="brand-button"
@@ -539,18 +549,20 @@ export default function BrieflyApp({
           </label>
         </header>
 
-        <nav className="admin-shortcuts" aria-label="Briefly admin sections">
-          {adminTabs.map(([tabView, label]) => (
-            <button
-              key={tabView}
-              className={view === tabView ? "admin-chip is-active" : "admin-chip"}
-              type="button"
-              onClick={() => setView(tabView)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
+        {!isOfficialSite && (
+          <nav className="admin-shortcuts" aria-label="Briefly admin sections">
+            {adminTabs.map(([tabView, label]) => (
+              <button
+                key={tabView}
+                className={view === tabView ? "admin-chip is-active" : "admin-chip"}
+                type="button"
+                onClick={() => setView(tabView)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        )}
 
         <main>
           {view === "home" && (
@@ -585,80 +597,84 @@ export default function BrieflyApp({
                 </div>
               </div>
 
-              <div className="home-actions">
-                <button className="primary-action" type="button" onClick={startBrief}>
-                  {copy.startBrief}
-                </button>
-                {completedCount > 0 && (
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    onClick={() => setView("brief")}
-                  >
-                    {copy.continueBrief}
-                  </button>
-                )}
-              </div>
-
-              <div className="progress-track" aria-label="Daily brief progress">
-                <span
-                  style={{
-                    width: hasStories
-                      ? `${Math.round((completedCount / stories.length) * 100)}%`
-                      : "0%",
-                  }}
-                />
-              </div>
-
-              <section className="personal-card" aria-labelledby="personal-title">
-                <div>
-                  <p className="eyebrow">{copy.personalEyebrow}</p>
-                  <h2 id="personal-title">{copy.personalTitle}</h2>
-                  <p>{copy.personalCopy}</p>
-                </div>
-                <button
-                  className="text-action"
-                  type="button"
-                  onClick={() => setProfileOpen((current) => !current)}
-                >
-                  {copy.editProfile}
-                </button>
-              </section>
-
-              {profileOpen && (
-                <form className="profile-panel">
-                  <fieldset>
-                    <legend>{copy.profileLegend}</legend>
-                    <div className="chip-grid">
-                      {market.profileOptions.map((option) => (
-                        <label className="profile-chip" key={option}>
-                          <input
-                            type="checkbox"
-                            checked={state.profile.includes(option)}
-                            onChange={() => toggleProfileOption(option)}
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <div className="form-actions">
-                    <button
-                      className="secondary-action"
-                      type="button"
-                      onClick={() => updateState({ profile: [] })}
-                    >
-                      {copy.deleteProfile}
+              {!isOfficialSite && (
+                <>
+                  <div className="home-actions">
+                    <button className="primary-action" type="button" onClick={startBrief}>
+                      {copy.startBrief}
                     </button>
-                    <button
-                      className="primary-action"
-                      type="button"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      {copy.saveProfile}
-                    </button>
+                    {completedCount > 0 && (
+                      <button
+                        className="secondary-action"
+                        type="button"
+                        onClick={() => setView("brief")}
+                      >
+                        {copy.continueBrief}
+                      </button>
+                    )}
                   </div>
-                </form>
+
+                  <div className="progress-track" aria-label="Daily brief progress">
+                    <span
+                      style={{
+                        width: hasStories
+                          ? `${Math.round((completedCount / stories.length) * 100)}%`
+                          : "0%",
+                      }}
+                    />
+                  </div>
+
+                  <section className="personal-card" aria-labelledby="personal-title">
+                    <div>
+                      <p className="eyebrow">{copy.personalEyebrow}</p>
+                      <h2 id="personal-title">{copy.personalTitle}</h2>
+                      <p>{copy.personalCopy}</p>
+                    </div>
+                    <button
+                      className="text-action"
+                      type="button"
+                      onClick={() => setProfileOpen((current) => !current)}
+                    >
+                      {copy.editProfile}
+                    </button>
+                  </section>
+
+                  {profileOpen && (
+                    <form className="profile-panel">
+                      <fieldset>
+                        <legend>{copy.profileLegend}</legend>
+                        <div className="chip-grid">
+                          {market.profileOptions.map((option) => (
+                            <label className="profile-chip" key={option}>
+                              <input
+                                type="checkbox"
+                                checked={state.profile.includes(option)}
+                                onChange={() => toggleProfileOption(option)}
+                              />
+                              <span>{option}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                      <div className="form-actions">
+                        <button
+                          className="secondary-action"
+                          type="button"
+                          onClick={() => updateState({ profile: [] })}
+                        >
+                          {copy.deleteProfile}
+                        </button>
+                        <button
+                          className="primary-action"
+                          type="button"
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          {copy.saveProfile}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </>
               )}
 
               <section className="today-feed" aria-labelledby="today-feed-title">
@@ -669,14 +685,20 @@ export default function BrieflyApp({
                       {state.market === "RS" ? "Najvažnije priče" : "Най-важните истории"}
                     </h2>
                   </div>
-                  <button
-                    className="text-action"
-                    type="button"
-                    onClick={startBrief}
-                    disabled={!hasStories}
-                  >
-                    {copy.startBrief}
-                  </button>
+                  {isOfficialSite ? (
+                    <span className="story-count-pill">
+                      {stories.length} {copy.storiesLabel}
+                    </span>
+                  ) : (
+                    <button
+                      className="text-action"
+                      type="button"
+                      onClick={startBrief}
+                      disabled={!hasStories}
+                    >
+                      {copy.startBrief}
+                    </button>
+                  )}
                 </div>
 
                 {!hasStories && (
@@ -687,7 +709,7 @@ export default function BrieflyApp({
                   </p>
                 )}
 
-                {stories.slice(0, 5).map((story) => (
+                {visibleHomeStories.map((story) => (
                   <StoryCard
                     key={`home-${story.id}`}
                     copy={copy}
@@ -709,7 +731,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "brief" && (
+          {!isOfficialSite && view === "brief" && (
             <section className="view is-active">
               {!hasStories ? (
                 <section className="completion-state" aria-live="polite">
@@ -723,13 +745,15 @@ export default function BrieflyApp({
                       ? "Briefly prikazuje samo stvarne priče iz poslednjih 36 sati. Pokreni ingestion, pa generiši dnevne priče."
                       : "Briefly показва само реални истории от последните 36 часа. Пусни ingestion, после генерирай дневните истории."}
                   </p>
-                  <button
-                    className="primary-action"
-                    type="button"
-                    onClick={() => setView("operator")}
-                  >
-                    Operator
-                  </button>
+                  {!isOfficialSite && (
+                    <button
+                      className="primary-action"
+                      type="button"
+                      onClick={() => setView("operator")}
+                    >
+                      Operator
+                    </button>
+                  )}
                 </section>
               ) : (
                 <>
@@ -819,7 +843,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "sources" && (
+          {!isOfficialSite && view === "sources" && (
             <section className="view is-active">
               <div className="section-heading">
                 <p className="eyebrow">{copy.sourcesEyebrow}</p>
@@ -898,7 +922,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "editorial" && (
+          {!isOfficialSite && view === "editorial" && (
             <section className="view is-active">
               <div className="section-heading">
                 <p className="eyebrow">Phase 1</p>
@@ -912,7 +936,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "imported" && (
+          {!isOfficialSite && view === "imported" && (
             <section className="view is-active">
               <div className="section-heading">
                 <p className="eyebrow">Review</p>
@@ -1007,7 +1031,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "operator" && (
+          {!isOfficialSite && view === "operator" && (
             <section className="view is-active">
               <div className="section-heading">
                 <p className="eyebrow">Operations</p>
@@ -1140,7 +1164,7 @@ export default function BrieflyApp({
             </section>
           )}
 
-          {view === "studio" && (
+          {!isOfficialSite && view === "studio" && (
             <section className="view is-active">
               <div className="section-heading">
                 <p className="eyebrow">AI Studio</p>
@@ -1169,19 +1193,21 @@ export default function BrieflyApp({
             </section>
           )}
         </main>
-        <nav className="bottom-nav" aria-label="Briefly main navigation">
-          {primaryTabs.map(([tabView, label]) => (
-            <button
-              key={tabView}
-              className={view === tabView ? "bottom-tab is-active" : "bottom-tab"}
-              type="button"
-              onClick={() => setView(tabView)}
-            >
-              <span aria-hidden="true">{bottomTabIcon(tabView)}</span>
-              <strong>{label}</strong>
-            </button>
-          ))}
-        </nav>
+        {!isOfficialSite && (
+          <nav className="bottom-nav" aria-label="Briefly main navigation">
+            {primaryTabs.map(([tabView, label]) => (
+              <button
+                key={tabView}
+                className={view === tabView ? "bottom-tab is-active" : "bottom-tab"}
+                type="button"
+                onClick={() => setView(tabView)}
+              >
+                <span aria-hidden="true">{bottomTabIcon(tabView)}</span>
+                <strong>{label}</strong>
+              </button>
+            ))}
+          </nav>
+        )}
       </div>
     </>
   );
