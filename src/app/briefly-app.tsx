@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   architectureNotes,
   getMarket,
@@ -199,6 +199,7 @@ export default function BrieflyApp({
   const [view, setView] = useState<ViewName>("home");
   const [profileOpen, setProfileOpen] = useState(false);
   const [openStoryId, setOpenStoryId] = useState<string | null>(null);
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [studioStoryId, setStudioStoryId] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [ingestionToken, setIngestionToken] = useState("");
@@ -247,6 +248,7 @@ export default function BrieflyApp({
   );
   const selectedStudioStory =
     studioStories.find((story) => story.id === studioStoryId) ?? studioStories[0];
+  const selectedStory = stories.find((story) => story.id === selectedStoryId) ?? null;
 
   const sourceRows = useMemo(
     () =>
@@ -344,6 +346,7 @@ export default function BrieflyApp({
     setView("home");
     setProfileOpen(false);
     setOpenStoryId(null);
+    setSelectedStoryId(null);
   }, [isOfficialSite]);
 
   function updateState(nextState: Partial<AppState>) {
@@ -537,6 +540,7 @@ export default function BrieflyApp({
               onChange={(event) => {
                 updateState({ market: event.target.value as MarketCode });
                 setOpenStoryId(null);
+                setSelectedStoryId(null);
                 setStudioStoryId(null);
               }}
             >
@@ -565,7 +569,31 @@ export default function BrieflyApp({
         )}
 
         <main>
-          {view === "home" && (
+          {view === "home" && selectedStory && (
+            <section className="view is-active story-detail-view">
+              <button
+                className="detail-back"
+                type="button"
+                onClick={() => setSelectedStoryId(null)}
+              >
+                ← {marketCodeBackLabel(state.market)}
+              </button>
+              <StoryCard
+                copy={copy}
+                marketCode={state.market}
+                story={selectedStory}
+                mode="detail"
+                isSaved={state.savedStoryIds.includes(selectedStory.id)}
+                isOpen
+                profile={state.profile}
+                onSave={() => toggleSaved(selectedStory.id)}
+                onShare={() => void shareStory(selectedStory)}
+                onOpen={() => setSelectedStoryId(null)}
+              />
+            </section>
+          )}
+
+          {view === "home" && !selectedStory && (
             <section className="view is-active">
               <div className="brief-hero">
                 <div>
@@ -715,16 +743,13 @@ export default function BrieflyApp({
                     copy={copy}
                     marketCode={state.market}
                     story={story}
+                    mode="cover"
                     isSaved={state.savedStoryIds.includes(story.id)}
                     isOpen={openStoryId === story.id}
                     profile={state.profile}
                     onSave={() => toggleSaved(story.id)}
                     onShare={() => void shareStory(story)}
-                    onOpen={() =>
-                      setOpenStoryId((current) =>
-                        current === story.id ? null : story.id,
-                      )
-                    }
+                    onOpen={() => setSelectedStoryId(story.id)}
                   />
                 ))}
               </section>
@@ -793,6 +818,7 @@ export default function BrieflyApp({
                       copy={copy}
                       marketCode={state.market}
                       story={activeStory}
+                      mode="detail"
                       isSaved={state.savedStoryIds.includes(activeStory.id)}
                       isOpen={openStoryId === activeStory.id}
                       profile={state.profile}
@@ -1227,6 +1253,10 @@ function bottomTabIcon(view: ViewName) {
   return icons[view];
 }
 
+function marketCodeBackLabel(marketCode: MarketCode) {
+  return marketCode === "RS" ? "Nazad" : "Назад";
+}
+
 function Splash({ visible }: { visible: boolean }) {
   return (
     <div className={visible ? "splash is-visible" : "splash"} aria-hidden="true">
@@ -1244,10 +1274,61 @@ function Splash({ visible }: { visible: boolean }) {
   );
 }
 
+function getStoryVisualImages(story: DisplayStory) {
+  if ("visualImages" in story && Array.isArray(story.visualImages)) {
+    return story.visualImages.filter(Boolean).slice(0, 4);
+  }
+
+  return [story.image].filter(Boolean);
+}
+
+function StoryVisual({
+  category,
+  headline,
+  images,
+  children,
+}: {
+  category: string;
+  headline: string;
+  images: string[];
+  children: ReactNode;
+}) {
+  const normalizedImages = images.length > 0 ? images : [];
+
+  return (
+    <div
+      className={[
+        "story-visual",
+        normalizedImages.length > 1 ? "has-collage" : "has-single-visual",
+      ].join(" ")}
+    >
+      <div className="visual-grid" aria-label={headline}>
+        {normalizedImages.length > 0 ? (
+          normalizedImages.map((image, index) => (
+            <div className="visual-tile" key={`${image}-${index}`}>
+              <img src={image} alt="" loading="lazy" />
+            </div>
+          ))
+        ) : (
+          <div className="visual-tile fallback-tile">
+            <span>{category}</span>
+          </div>
+        )}
+      </div>
+      <div className="visual-treatment" aria-hidden="true" />
+      <div className="visual-label" aria-hidden="true">
+        {category}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function StoryCard({
   story,
   marketCode,
   copy,
+  mode = "detail",
   isSaved,
   isOpen,
   profile,
@@ -1258,6 +1339,7 @@ function StoryCard({
   story: DisplayStory;
   marketCode: MarketCode;
   copy: ReturnType<typeof getUiCopy>;
+  mode?: "cover" | "detail";
   isSaved: boolean;
   isOpen: boolean;
   profile: string[];
@@ -1268,7 +1350,8 @@ function StoryCard({
   const generated = isGeneratedStory(story);
   const sourceSupport = `${story.sourceCount} ${sourceText(marketCode, story.sourceCount)}`;
   const visibleKeyPoints = story.keyPoints.filter((point) => point.trim()).slice(0, 3);
-  const showDetails = isOpen || generated;
+  const showDetails = mode === "detail" && (isOpen || generated);
+  const visualImages = getStoryVisualImages(story);
   const qnaPrompts =
     marketCode === "RS"
       ? [
@@ -1283,20 +1366,30 @@ function StoryCard({
         ];
 
   return (
-    <article className={generated ? "story-card is-generated" : "story-card"}>
+    <article
+      className={[
+        generated ? "story-card is-generated" : "story-card",
+        mode === "cover" ? "is-cover" : "is-detail",
+      ].join(" ")}
+    >
       <div className="story-kicker">
         <span>{story.category}</span>
-        <button className="story-back-button" type="button" onClick={onOpen}>
-          {showDetails ? "↑" : "↓"}
-        </button>
+        {mode === "detail" && (
+          <button className="story-back-button" type="button" onClick={onOpen}>
+            ↑
+          </button>
+        )}
       </div>
 
-      <div className="story-image">
-        <img className="story-img" src={story.image} alt="" />
+      <StoryVisual
+        category={story.category}
+        headline={story.headline}
+        images={visualImages}
+      >
         <span className="story-badge">
           {generated ? confidenceText(marketCode, story.confidenceStatus) : copy.sampleBadge}
         </span>
-      </div>
+      </StoryVisual>
 
       <div className="story-body">
         <h2 className="story-headline">{story.headline}</h2>
@@ -1307,16 +1400,18 @@ function StoryCard({
           {"official" in story && story.official && <span>{copy.official}</span>}
         </div>
 
-        <div className="story-actions">
-          <button className="icon-action" type="button" onClick={onSave}>
-            <span aria-hidden="true">□</span>
-            {isSaved ? copy.saved : copy.save}
-          </button>
-          <button className="icon-action" type="button" onClick={onShare}>
-            <span aria-hidden="true">↗</span>
-            {copy.share}
-          </button>
-        </div>
+        {mode === "detail" && (
+          <div className="story-actions">
+            <button className="icon-action" type="button" onClick={onSave}>
+              <span aria-hidden="true">□</span>
+              {isSaved ? copy.saved : copy.save}
+            </button>
+            <button className="icon-action" type="button" onClick={onShare}>
+              <span aria-hidden="true">↗</span>
+              {copy.share}
+            </button>
+          </div>
+        )}
 
         <section className="story-section">
           <h3>AI резюме</h3>
@@ -1335,13 +1430,18 @@ function StoryCard({
           </ol>
         </section>
 
-        <section className="story-section">
-          <h3>{copy.whyItMatters}</h3>
-          <p className="why-it-matters">{story.whyItMatters}</p>
-        </section>
+        {mode === "cover" && (
+          <button className="read-cta" type="button" onClick={onOpen}>
+            {marketCode === "RS" ? "Pročitaj" : "Прочети"}
+          </button>
+        )}
 
         {showDetails && (
           <div className="full-story">
+            <section className="story-section">
+              <h3>{copy.whyItMatters}</h3>
+              <p className="why-it-matters">{story.whyItMatters}</p>
+            </section>
             <section className="story-section">
               <h3>{getMarket(marketCode).whatThisMeansLabel}</h3>
               <p>
@@ -1369,19 +1469,18 @@ function StoryCard({
                   : "Отговорите се генерират само на база на избраните източници."}
               </p>
             </section>
+            <section className="story-section source-section">
+              <h3>{sourcesHeading(marketCode)}</h3>
+              <div className="source-chips">
+                {story.sources.map((source) => (
+                  <span className="source-chip" key={source}>
+                    {source}
+                  </span>
+                ))}
+              </div>
+            </section>
           </div>
         )}
-
-        <section className="story-section source-section">
-          <h3>{sourcesHeading(marketCode)}</h3>
-          <div className="source-chips">
-            {story.sources.map((source) => (
-              <span className="source-chip" key={source}>
-                {source}
-              </span>
-            ))}
-          </div>
-        </section>
       </div>
     </article>
   );

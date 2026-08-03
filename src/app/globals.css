@@ -1407,6 +1407,27 @@ legend {
   box-shadow: none;
 }
 
+.story-card.is-cover {
+  min-height: calc(100svh - 118px);
+  border: 1px solid var(--line);
+}
+
+.story-detail-view {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.detail-back {
+  justify-self: start;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 var(--space-3);
+  color: var(--muted);
+  background: var(--surface);
+  font-weight: 800;
+}
+
 .story-kicker {
   display: flex;
   align-items: center;
@@ -1433,17 +1454,110 @@ legend {
   font-size: 1rem;
 }
 
-.story-image {
+.story-visual {
+  position: relative;
+  overflow: hidden;
   min-height: 0;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255, 253, 250, 0.72), transparent 28%),
+    linear-gradient(135deg, #0b655d, #1e2c2b);
+  isolation: isolate;
+}
+
+.visual-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  transform: scale(1.04) rotate(-1deg);
+}
+
+.visual-tile {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  background: #dfe5df;
+}
+
+.visual-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.82) contrast(1.08);
+  transform: scale(1.1);
+}
+
+.has-single-visual .visual-grid {
+  display: block;
+}
+
+.has-single-visual .visual-tile {
+  width: 100%;
+  height: 100%;
+}
+
+.has-single-visual .visual-tile img {
+  transform: scale(1.16) translateX(-2%);
+}
+
+.visual-treatment {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(11, 25, 23, 0) 34%, rgba(8, 54, 50, 0.84) 100%),
+    linear-gradient(115deg, rgba(247, 245, 239, 0.78) 0 20%, rgba(247, 245, 239, 0) 46%),
+    repeating-linear-gradient(
+      108deg,
+      rgba(255, 255, 255, 0.16) 0,
+      rgba(255, 255, 255, 0.16) 2px,
+      transparent 2px,
+      transparent 26px
+    );
+  mix-blend-mode: normal;
+}
+
+.visual-label {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  max-width: 12ch;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(2.25rem, 14vw, 5.8rem);
+  font-weight: 950;
+  line-height: 0.82;
+  opacity: 0.24;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.fallback-tile {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 25% 35%, rgba(203, 55, 11, 0.22), transparent 34%),
+    linear-gradient(135deg, #e7f0ed, #0f6d64);
+}
+
+.fallback-tile span {
+  color: rgba(255, 253, 250, 0.86);
+  font-weight: 950;
+  text-transform: uppercase;
 }
 
 .story-badge {
   top: var(--space-3);
   right: auto;
+  left: var(--space-3);
   bottom: auto;
+  z-index: 3;
   max-width: calc(100% - var(--space-6));
   color: #176f3c;
   background: rgba(247, 255, 248, 0.9);
@@ -1452,8 +1566,14 @@ legend {
 
 .story-body {
   display: grid;
-  gap: var(--space-4);
+  flex: 1;
+  align-content: start;
+  gap: var(--space-3);
   padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.story-card.is-cover .story-body {
+  align-content: space-between;
 }
 
 .story-meta,
@@ -1463,14 +1583,29 @@ legend {
 }
 
 .story-headline {
-  font-size: clamp(2rem, 8vw, 3.05rem);
+  font-size: clamp(1.9rem, 7.2vw, 2.7rem);
   line-height: 0.98;
 }
 
+.story-card.is-cover .story-headline {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 .story-description {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--ink);
   font-size: 0.98rem;
   line-height: 1.58;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.story-card.is-cover .story-description {
+  -webkit-line-clamp: 3;
 }
 
 .story-meta {
@@ -1521,7 +1656,7 @@ legend {
 
 .key-points {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1545,8 +1680,28 @@ legend {
 }
 
 .key-points li p {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   color: var(--ink);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.story-card.is-detail .key-points li p {
+  display: block;
+  overflow: visible;
+}
+
+.read-cta {
+  min-height: 52px;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  color: #fffdfa;
+  background: var(--accent);
+  font-size: 1rem;
+  font-weight: 950;
 }
 
 .why-it-matters {
