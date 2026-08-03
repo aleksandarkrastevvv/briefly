@@ -24,6 +24,7 @@ export type GeneratedBrieflyStory = {
   sourceCount: number;
   updatedAt: string;
   image: string;
+  visualImages: string[];
   sample: false;
   official?: boolean;
   confidenceStatus: string;
@@ -110,6 +111,7 @@ type SupabaseStoryClusterRow = {
   story_sources?: Array<{
     raw_articles?: {
       original_url: string;
+      image_url: string | null;
       sources?: {
         name: string;
         official: boolean;
@@ -175,7 +177,7 @@ export async function getHomepageData(): Promise<HomepageData> {
     supabase
       .from("story_clusters")
       .select(
-        "id,market_code,canonical_headline,summary,key_points,why_it_matters,what_happens_next,affected_audiences,category,confidence_status,editorial_status,earliest_publication_at,latest_update_at,created_at,story_sources(raw_articles(original_url,sources(name,official)))",
+        "id,market_code,canonical_headline,summary,key_points,why_it_matters,what_happens_next,affected_audiences,category,confidence_status,editorial_status,earliest_publication_at,latest_update_at,created_at,story_sources(raw_articles(original_url,image_url,sources(name,official)))",
       )
       .order("latest_update_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
@@ -250,6 +252,14 @@ export async function getHomepageData(): Promise<HomepageData> {
         const official = sourceRows.some(
           (source) => source.raw_articles?.sources?.official,
         );
+        const visualImages = Array.from(
+          new Set(
+            sourceRows
+              .map((source) => source.raw_articles?.image_url)
+              .filter((url): url is string => Boolean(url)),
+          ),
+        ).slice(0, 4);
+        const fallbackImage = imageForCategory(story.market_code, story.category);
         const affectedAudiences = Array.isArray(story.affected_audiences)
           ? story.affected_audiences
           : [];
@@ -279,7 +289,8 @@ export async function getHomepageData(): Promise<HomepageData> {
           sourceCount: Math.max(sourceRows.length, sourceNames.length, 1),
           updatedAt:
             story.latest_update_at ?? story.earliest_publication_at ?? story.created_at,
-          image: imageForCategory(story.market_code, story.category),
+          image: visualImages[0] ?? fallbackImage,
+          visualImages: visualImages.length > 0 ? visualImages : [fallbackImage],
           sample: false,
           official,
           confidenceStatus: story.confidence_status,
