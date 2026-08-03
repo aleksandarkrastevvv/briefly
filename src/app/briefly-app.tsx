@@ -1268,79 +1268,120 @@ function StoryCard({
   const generated = isGeneratedStory(story);
   const sourceSupport = `${story.sourceCount} ${sourceText(marketCode, story.sourceCount)}`;
   const visibleKeyPoints = story.keyPoints.filter((point) => point.trim()).slice(0, 3);
+  const showDetails = isOpen || generated;
+  const qnaPrompts =
+    marketCode === "RS"
+      ? [
+          "Zašto je ova priča važna danas?",
+          "Ko je najviše pogođen?",
+          "Šta treba pratiti dalje?",
+        ]
+      : [
+          "Защо тази история е важна днес?",
+          "Кой е най-засегнат?",
+          "Какво трябва да следим след това?",
+        ];
 
   return (
     <article className={generated ? "story-card is-generated" : "story-card"}>
+      <div className="story-kicker">
+        <span>{story.category}</span>
+        <button className="story-back-button" type="button" onClick={onOpen}>
+          {showDetails ? "↑" : "↓"}
+        </button>
+      </div>
+
       <div className="story-image">
         <img className="story-img" src={story.image} alt="" />
         <span className="story-badge">
           {generated ? confidenceText(marketCode, story.confidenceStatus) : copy.sampleBadge}
         </span>
       </div>
+
       <div className="story-body">
-        <div className="story-meta">
-          <span>{story.category}</span>
-          <span className="story-meta-side">
-            <span>{formatTime(marketCode, story.updatedAt)}</span>
-          </span>
-        </div>
         <h2 className="story-headline">{story.headline}</h2>
-        <p className="story-description">{story.description}</p>
-        <ul className="key-points">
-          {visibleKeyPoints.map((point) => (
-            <li key={point}>{point}</li>
-          ))}
-        </ul>
-        <section>
+
+        <div className="story-meta">
+          <span>{formatTime(marketCode, story.updatedAt)}</span>
+          <span>{sourceSupport}</span>
+          {"official" in story && story.official && <span>{copy.official}</span>}
+        </div>
+
+        <div className="story-actions">
+          <button className="icon-action" type="button" onClick={onSave}>
+            <span aria-hidden="true">□</span>
+            {isSaved ? copy.saved : copy.save}
+          </button>
+          <button className="icon-action" type="button" onClick={onShare}>
+            <span aria-hidden="true">↗</span>
+            {copy.share}
+          </button>
+        </div>
+
+        <section className="story-section">
+          <h3>AI резюме</h3>
+          <p className="story-description">{story.description}</p>
+        </section>
+
+        <section className="story-section">
+          <h3>{marketCode === "RS" ? "Tri ključne činjenice" : "Три ключови факта"}</h3>
+          <ol className="key-points">
+            {visibleKeyPoints.map((point, index) => (
+              <li key={point}>
+                <span>{index + 1}.</span>
+                <p>{point}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="story-section">
           <h3>{copy.whyItMatters}</h3>
           <p className="why-it-matters">{story.whyItMatters}</p>
         </section>
-        <div className="story-footer">
-          <p className="source-line">
-            {sourceSupport}
-            {"official" in story && story.official ? ` · ${copy.official}` : ""}
-          </p>
-          <div className="story-actions">
-            <button className="primary-action" type="button" onClick={onOpen}>
-              {copy.openFull}
-            </button>
-            <button className="icon-action" type="button" onClick={onSave}>
-              {isSaved ? copy.saved : copy.save}
-            </button>
-            <button className="icon-action" type="button" onClick={onShare}>
-              {copy.share}
-            </button>
-          </div>
-        </div>
 
-        {isOpen && (
+        {showDetails && (
           <div className="full-story">
-            <section>
-              <h3>{getMarket(marketCode).summaryLabel}</h3>
-              <p>{story.description}</p>
-            </section>
-            <section>
+            <section className="story-section">
               <h3>{getMarket(marketCode).whatThisMeansLabel}</h3>
               <p>
                 {meaningForProfile(story, profile) ??
                   getMarket(marketCode).insufficientInfo}
               </p>
             </section>
-            <section>
+            <section className="story-section">
               <h3>{marketCode === "RS" ? "Šta sledi" : "Какво следва"}</h3>
               <p>{story.next}</p>
             </section>
-            <section>
-              <h3>{sourcesHeading(marketCode)}</h3>
-              <p>{story.sources.join(", ")}</p>
-            </section>
-            <section>
+            <section className="story-section ai-qa">
               <h3>AI Q&A</h3>
-              <p>{getMarket(marketCode).insufficientInfo}</p>
+              <div className="qa-list">
+                {qnaPrompts.map((question) => (
+                  <button className="qa-row" type="button" key={question}>
+                    <span>{question}</span>
+                    <span aria-hidden="true">⌄</span>
+                  </button>
+                ))}
+              </div>
+              <p className="disclaimer">
+                {marketCode === "RS"
+                  ? "Odgovori se generišu samo na osnovu izabranih izvora."
+                  : "Отговорите се генерират само на база на избраните източници."}
+              </p>
             </section>
-            <p className="disclaimer">{copy.disclaimer}</p>
           </div>
         )}
+
+        <section className="story-section source-section">
+          <h3>{sourcesHeading(marketCode)}</h3>
+          <div className="source-chips">
+            {story.sources.map((source) => (
+              <span className="source-chip" key={source}>
+                {source}
+              </span>
+            ))}
+          </div>
+        </section>
       </div>
     </article>
   );
