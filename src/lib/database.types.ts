@@ -36,6 +36,255 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["markets"]["Insert"]>;
       };
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          full_name: string | null;
+          role: "user" | "admin";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string | null;
+          role?: "user" | "admin";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
+      };
+      projects: {
+        Row: RowWithId & {
+          user_id: string;
+          title: string;
+          author_name: string;
+          subtitle: string | null;
+          description: string | null;
+          book_type: string;
+          language: string;
+          tone: string;
+          tier: string;
+          status: string;
+          dedication: string | null;
+          cover_style: string | null;
+        };
+        Insert: Partial<RowWithId> & {
+          user_id: string;
+          title?: string;
+          author_name: string;
+          subtitle?: string | null;
+          description?: string | null;
+          book_type?: string;
+          language?: string;
+          tone?: string;
+          tier?: string;
+          status?: string;
+          dedication?: string | null;
+          cover_style?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
+      };
+      recordings: {
+        Row: {
+          id: string;
+          project_id: string;
+          user_id: string;
+          file_name: string;
+          storage_bucket: string;
+          storage_path: string;
+          file_type: string;
+          file_size: number;
+          duration_seconds: number | null;
+          status: string;
+          uploaded_at: string;
+          processed_at: string | null;
+          error_message: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          user_id: string;
+          file_name: string;
+          storage_bucket?: string;
+          storage_path: string;
+          file_type: string;
+          file_size?: number;
+          duration_seconds?: number | null;
+          status?: string;
+          uploaded_at?: string;
+          processed_at?: string | null;
+          error_message?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["recordings"]["Insert"]>;
+      };
+      transcripts: {
+        Row: RowWithId & {
+          project_id: string;
+          recording_id: string;
+          user_id: string;
+          raw_text: string;
+          cleaned_text: string | null;
+          language: string;
+          confidence: number | null;
+          detected_people: Json;
+          detected_places: Json;
+          detected_dates: Json;
+          possible_issues: Json;
+        };
+        Insert: Partial<RowWithId> & {
+          project_id: string;
+          recording_id: string;
+          user_id: string;
+          raw_text: string;
+          cleaned_text?: string | null;
+          language?: string;
+          confidence?: number | null;
+          detected_people?: Json;
+          detected_places?: Json;
+          detected_dates?: Json;
+          possible_issues?: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["transcripts"]["Insert"]>;
+      };
+      chapters: {
+        Row: RowWithId & {
+          project_id: string;
+          recording_id: string | null;
+          transcript_id: string | null;
+          user_id: string;
+          title: string;
+          summary: string;
+          content: string;
+          chapter_order: number;
+          status: string;
+          revision_number: number;
+          key_people: Json;
+          key_places: Json;
+          key_dates: Json;
+          unresolved_questions: Json;
+          suggested_follow_up_questions: Json;
+        };
+        Insert: Partial<RowWithId> & {
+          project_id: string;
+          recording_id?: string | null;
+          transcript_id?: string | null;
+          user_id: string;
+          title: string;
+          summary?: string;
+          content?: string;
+          chapter_order?: number;
+          status?: string;
+          revision_number?: number;
+          key_people?: Json;
+          key_places?: Json;
+          key_dates?: Json;
+          unresolved_questions?: Json;
+          suggested_follow_up_questions?: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["chapters"]["Insert"]>;
+      };
+      chapter_revisions: {
+        Row: {
+          id: string;
+          chapter_id: string;
+          project_id: string;
+          user_id: string;
+          content: string;
+          source: string;
+          revision_number: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          chapter_id: string;
+          project_id: string;
+          user_id: string;
+          content: string;
+          source: string;
+          revision_number: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["chapter_revisions"]["Insert"]>;
+      };
+      book_exports: {
+        Row: {
+          id: string;
+          project_id: string;
+          user_id: string;
+          type: string;
+          storage_bucket: string;
+          storage_path: string;
+          status: string;
+          created_at: string;
+          completed_at: string | null;
+          error_message: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          user_id: string;
+          type: string;
+          storage_bucket?: string;
+          storage_path: string;
+          status?: string;
+          created_at?: string;
+          completed_at?: string | null;
+          error_message?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["book_exports"]["Insert"]>;
+      };
+      orders: {
+        Row: RowWithId & {
+          user_id: string;
+          project_id: string;
+          tier: string;
+          amount: number | null;
+          currency: string;
+          status: string;
+          stripe_session_id: string | null;
+          customer_notes: string | null;
+          admin_notes: string | null;
+          requested_hardcover_copies: number | null;
+          requires_human_review: boolean;
+          requires_printing: boolean;
+          requires_publishing_help: boolean;
+        };
+        Insert: Partial<RowWithId> & {
+          user_id: string;
+          project_id: string;
+          tier: string;
+          amount?: number | null;
+          currency?: string;
+          status?: string;
+          stripe_session_id?: string | null;
+          customer_notes?: string | null;
+          admin_notes?: string | null;
+          requested_hardcover_copies?: number | null;
+          requires_human_review?: boolean;
+          requires_printing?: boolean;
+          requires_publishing_help?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
+      };
+      admin_notes: {
+        Row: {
+          id: string;
+          project_id: string;
+          admin_user_id: string;
+          note: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          admin_user_id: string;
+          note: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["admin_notes"]["Insert"]>;
+      };
       sources: {
         Row: RowWithId & {
           market_code: string;
@@ -161,6 +410,46 @@ export type Database = {
           published_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["daily_briefs"]["Insert"]>;
+      };
+      generated_social_content: {
+        Row: RowWithId & {
+          market_code: string;
+          story_cluster_id: string | null;
+          daily_brief_id: string | null;
+          platform: string;
+          format: string;
+          payload: Json;
+          status: string;
+        };
+        Insert: Partial<RowWithId> & {
+          market_code: string;
+          story_cluster_id?: string | null;
+          daily_brief_id?: string | null;
+          platform: string;
+          format: string;
+          payload: Json;
+          status?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["generated_social_content"]["Insert"]
+        >;
+      };
+      publishing_queue: {
+        Row: RowWithId & {
+          generated_social_content_id: string;
+          platform: string;
+          status: string;
+          scheduled_for: string | null;
+          error: string | null;
+        };
+        Insert: Partial<RowWithId> & {
+          generated_social_content_id: string;
+          platform: string;
+          status?: string;
+          scheduled_for?: string | null;
+          error?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["publishing_queue"]["Insert"]>;
       };
       ingestion_logs: {
         Row: {
