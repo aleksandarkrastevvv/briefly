@@ -163,7 +163,10 @@ assert.equal(
 [
   "getHomepageData",
   "force-dynamic",
-  "<BrieflyApp homepageData={homepageData} />",
+  "headers()",
+  "isOfficialSite",
+  "everything-important-briefly.today",
+  "homepageData={homepageData}",
 ].forEach((needle) => {
   assert.ok(pageSource.includes(needle), `Homepage missing Supabase wrapper marker: ${needle}`);
 });
