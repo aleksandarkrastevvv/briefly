@@ -493,6 +493,12 @@ export default function BrieflyApp({
     ["editorial", copy.tabEditorial],
     ["studio", copy.tabStudio],
   ];
+  const primaryTabs = tabs.filter(([tabView]) =>
+    ["home", "brief", "sources", "operator", "studio"].includes(tabView),
+  );
+  const adminTabs = tabs.filter(([tabView]) =>
+    ["imported", "editorial"].includes(tabView),
+  );
 
   return (
     <>
@@ -533,11 +539,11 @@ export default function BrieflyApp({
           </label>
         </header>
 
-        <nav className="section-tabs" aria-label="Briefly sections">
-          {tabs.map(([tabView, label]) => (
+        <nav className="admin-shortcuts" aria-label="Briefly admin sections">
+          {adminTabs.map(([tabView, label]) => (
             <button
               key={tabView}
-              className={view === tabView ? "tab is-active" : "tab"}
+              className={view === tabView ? "admin-chip is-active" : "admin-chip"}
               type="button"
               onClick={() => setView(tabView)}
             >
@@ -654,6 +660,52 @@ export default function BrieflyApp({
                   </div>
                 </form>
               )}
+
+              <section className="today-feed" aria-labelledby="today-feed-title">
+                <div className="feed-heading">
+                  <div>
+                    <p className="eyebrow">Briefly</p>
+                    <h2 id="today-feed-title">
+                      {state.market === "RS" ? "Najvažnije priče" : "Най-важните истории"}
+                    </h2>
+                  </div>
+                  <button
+                    className="text-action"
+                    type="button"
+                    onClick={startBrief}
+                    disabled={!hasStories}
+                  >
+                    {copy.startBrief}
+                  </button>
+                </div>
+
+                {!hasStories && (
+                  <p className="empty-state">
+                    {state.market === "RS"
+                      ? "Još nema dovoljno svežih priča sa dva ili više izvora."
+                      : "Още няма достатъчно свежи истории с два или повече източника."}
+                  </p>
+                )}
+
+                {stories.slice(0, 5).map((story) => (
+                  <StoryCard
+                    key={`home-${story.id}`}
+                    copy={copy}
+                    marketCode={state.market}
+                    story={story}
+                    isSaved={state.savedStoryIds.includes(story.id)}
+                    isOpen={openStoryId === story.id}
+                    profile={state.profile}
+                    onSave={() => toggleSaved(story.id)}
+                    onShare={() => void shareStory(story)}
+                    onOpen={() =>
+                      setOpenStoryId((current) =>
+                        current === story.id ? null : story.id,
+                      )
+                    }
+                  />
+                ))}
+              </section>
             </section>
           )}
 
@@ -1117,9 +1169,36 @@ export default function BrieflyApp({
             </section>
           )}
         </main>
+        <nav className="bottom-nav" aria-label="Briefly main navigation">
+          {primaryTabs.map(([tabView, label]) => (
+            <button
+              key={tabView}
+              className={view === tabView ? "bottom-tab is-active" : "bottom-tab"}
+              type="button"
+              onClick={() => setView(tabView)}
+            >
+              <span aria-hidden="true">{bottomTabIcon(tabView)}</span>
+              <strong>{label}</strong>
+            </button>
+          ))}
+        </nav>
       </div>
     </>
   );
+}
+
+function bottomTabIcon(view: ViewName) {
+  const icons: Record<ViewName, string> = {
+    home: "⌂",
+    brief: "◈",
+    sources: "◎",
+    imported: "⇣",
+    operator: "⚙",
+    editorial: "✎",
+    studio: "✦",
+  };
+
+  return icons[view];
 }
 
 function Splash({ visible }: { visible: boolean }) {
@@ -1162,31 +1241,27 @@ function StoryCard({
 }) {
   const generated = isGeneratedStory(story);
   const sourceSupport = `${story.sourceCount} ${sourceText(marketCode, story.sourceCount)}`;
+  const visibleKeyPoints = story.keyPoints.filter((point) => point.trim()).slice(0, 3);
 
   return (
     <article className={generated ? "story-card is-generated" : "story-card"}>
-      {!generated && (
-        <div className="story-image">
-          <img className="story-img" src={story.image} alt="" />
-          <span className="story-badge">{copy.sampleBadge}</span>
-        </div>
-      )}
+      <div className="story-image">
+        <img className="story-img" src={story.image} alt="" />
+        <span className="story-badge">
+          {generated ? confidenceText(marketCode, story.confidenceStatus) : copy.sampleBadge}
+        </span>
+      </div>
       <div className="story-body">
         <div className="story-meta">
           <span>{story.category}</span>
           <span className="story-meta-side">
-            {generated && (
-              <span className="inline-status">
-                {confidenceText(marketCode, story.confidenceStatus)}
-              </span>
-            )}
             <span>{formatTime(marketCode, story.updatedAt)}</span>
           </span>
         </div>
         <h2 className="story-headline">{story.headline}</h2>
         <p className="story-description">{story.description}</p>
         <ul className="key-points">
-          {story.keyPoints.map((point) => (
+          {visibleKeyPoints.map((point) => (
             <li key={point}>{point}</li>
           ))}
         </ul>
