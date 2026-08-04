@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = readPublicOrigin(request);
   const ingestion = await callProtectedPost(
     `${origin}/api/ingestion/rss`,
     ingestionToken,
@@ -94,6 +94,14 @@ export async function GET(request: Request) {
     stories: stories.payload,
     instagram: instagram.payload,
   });
+}
+
+function readPublicOrigin(request: Request) {
+  const publicSiteUrl = process.env.PUBLIC_SITE_URL?.trim();
+
+  return publicSiteUrl
+    ? publicSiteUrl.replace(/\/$/, "")
+    : new URL(request.url).origin;
 }
 
 async function callProtectedPost(
