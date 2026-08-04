@@ -34,6 +34,11 @@ export async function GET(request: Request) {
   );
 
   if (!ingestion.ok) {
+    console.error("Daily ingestion failed.", {
+      status: ingestion.status,
+      payload: ingestion.payload,
+    });
+
     return NextResponse.json(
       { error: "Daily ingestion failed.", ingestion },
       { status: 502 },
@@ -47,6 +52,11 @@ export async function GET(request: Request) {
   );
 
   if (!stories.ok) {
+    console.error("Daily story generation failed.", {
+      status: stories.status,
+      payload: stories.payload,
+    });
+
     return NextResponse.json(
       { error: "Daily story generation failed.", ingestion, stories },
       { status: 502 },
@@ -70,10 +80,10 @@ export async function GET(request: Request) {
         };
 
   if (!instagram.ok) {
-    return NextResponse.json(
-      { error: "Instagram publishing failed.", ingestion, stories, instagram },
-      { status: 502 },
-    );
+    console.error("Instagram publishing failed.", {
+      status: instagram.status,
+      payload: instagram.payload,
+    });
   }
 
   return NextResponse.json({
