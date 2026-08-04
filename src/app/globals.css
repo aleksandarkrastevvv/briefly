@@ -1445,7 +1445,7 @@ legend {
 }
 
 .story-card.is-cover {
-  min-height: calc(100svh - 34px);
+  min-height: min(100svh, 780px);
   border: 1px solid var(--line);
 }
 
@@ -1495,7 +1495,7 @@ legend {
   position: relative;
   overflow: hidden;
   min-height: 0;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background:
@@ -1605,12 +1605,14 @@ legend {
   display: grid;
   flex: 1;
   align-content: start;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4) var(--space-4);
+  gap: 0.7rem;
+  padding: var(--space-3) var(--space-4);
 }
 
 .story-card.is-cover .story-body {
-  align-content: space-between;
+  align-content: start;
+  grid-template-rows: auto auto auto auto 1fr auto;
+  min-height: 0;
 }
 
 .story-meta,
@@ -1620,29 +1622,29 @@ legend {
 }
 
 .story-headline {
-  font-size: clamp(1.75rem, 6.6vw, 2.45rem);
-  line-height: 0.98;
+  font-size: clamp(1.55rem, 5.8vw, 2.1rem);
+  line-height: 1;
 }
 
 .story-card.is-cover .story-headline {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  display: block;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
 }
 
 .story-description {
-  display: -webkit-box;
-  overflow: hidden;
   color: var(--ink);
   font-size: 0.95rem;
   line-height: 1.48;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
 }
 
 .story-card.is-cover .story-description {
-  -webkit-line-clamp: 2;
+  display: block;
+  overflow: visible;
+  font-size: 0.9rem;
+  line-height: 1.38;
+  text-overflow: clip;
 }
 
 .story-meta {
@@ -1673,7 +1675,7 @@ legend {
 
 .story-section {
   display: grid;
-  gap: var(--space-1);
+  gap: 0.45rem;
 }
 
 .story-section h3 {
@@ -1693,7 +1695,7 @@ legend {
 
 .key-points {
   display: grid;
-  gap: var(--space-2);
+  gap: 0.45rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1708,7 +1710,7 @@ legend {
   border: 0;
   color: var(--ink);
   background: transparent;
-  line-height: 1.38;
+  line-height: 1.32;
 }
 
 .key-points li span {
@@ -1717,16 +1719,15 @@ legend {
 }
 
 .key-points li p {
-  display: -webkit-box;
-  overflow: hidden;
   margin: 0;
   color: var(--ink);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .story-card.is-cover .key-points li p {
-  -webkit-line-clamp: 1;
+  display: block;
+  overflow: visible;
+  font-size: 0.88rem;
+  text-overflow: clip;
 }
 
 .story-card.is-detail .key-points li p {
@@ -1735,6 +1736,7 @@ legend {
 }
 
 .read-cta {
+  align-self: end;
   min-height: 48px;
   width: 100%;
   border: 0;

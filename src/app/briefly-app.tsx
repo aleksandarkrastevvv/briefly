@@ -1293,6 +1293,13 @@ function isLegacySeedVisual(image: string) {
   return image.startsWith("/assets/bg-") || image.startsWith("/assets/rs-");
 }
 
+function cleanPublicCardText(value: string) {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/\s*(?:\.{3,}|…)\s*$/u, "")
+    .trim();
+}
+
 function StoryVisual({
   category,
   headline,
@@ -1360,7 +1367,12 @@ function StoryCard({
 }) {
   const generated = isGeneratedStory(story);
   const sourceSupport = `${story.sourceCount} ${sourceText(marketCode, story.sourceCount)}`;
-  const visibleKeyPoints = story.keyPoints.filter((point) => point.trim()).slice(0, 3);
+  const headline = cleanPublicCardText(story.headline);
+  const description = cleanPublicCardText(story.description);
+  const visibleKeyPoints = story.keyPoints
+    .map(cleanPublicCardText)
+    .filter((point) => point.trim())
+    .slice(0, 3);
   const showDetails = mode === "detail" && (isOpen || generated);
   const visualImages = getStoryVisualImages(story);
   const qnaPrompts =
@@ -1394,7 +1406,7 @@ function StoryCard({
 
       <StoryVisual
         category={story.category}
-        headline={story.headline}
+        headline={headline}
         images={visualImages}
       >
         <span className="story-badge">
@@ -1403,7 +1415,7 @@ function StoryCard({
       </StoryVisual>
 
       <div className="story-body">
-        <h2 className="story-headline">{story.headline}</h2>
+        <h2 className="story-headline">{headline}</h2>
 
         <div className="story-meta">
           <span>{formatTime(marketCode, story.updatedAt)}</span>
@@ -1425,7 +1437,7 @@ function StoryCard({
         )}
 
         <section className="story-section summary-section">
-          <p className="story-description">{story.description}</p>
+          <p className="story-description">{description}</p>
         </section>
 
         <section className="story-section">
