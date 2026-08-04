@@ -1279,20 +1279,6 @@ function Splash({ visible }: { visible: boolean }) {
   );
 }
 
-function getStoryVisualImages(story: DisplayStory) {
-  if ("visualImages" in story && Array.isArray(story.visualImages)) {
-    return story.visualImages
-      .filter((image) => image && !isLegacySeedVisual(image))
-      .slice(0, 4);
-  }
-
-  return [story.image].filter((image) => image && !isLegacySeedVisual(image));
-}
-
-function isLegacySeedVisual(image: string) {
-  return image.startsWith("/assets/bg-") || image.startsWith("/assets/rs-");
-}
-
 function cleanPublicCardText(value: string) {
   return value
     .replace(/\s+/g, " ")
@@ -1303,35 +1289,24 @@ function cleanPublicCardText(value: string) {
 function StoryVisual({
   category,
   headline,
-  images,
   children,
 }: {
   category: string;
   headline: string;
-  images: string[];
   children: ReactNode;
 }) {
-  const normalizedImages = images.length > 0 ? images : [];
-
   return (
-    <div
-      className={[
-        "story-visual",
-        normalizedImages.length > 1 ? "has-collage" : "has-single-visual",
-      ].join(" ")}
-    >
-      <div className="visual-grid" aria-label={headline}>
-        {normalizedImages.length > 0 ? (
-          normalizedImages.map((image, index) => (
-            <div className="visual-tile" key={`${image}-${index}`}>
-              <img src={image} alt="" loading="lazy" />
-            </div>
-          ))
-        ) : (
-          <div className="visual-tile fallback-tile">
-            <span>{category}</span>
-          </div>
-        )}
+    <div className="story-visual has-original-visual">
+      <div className="visual-composite" aria-label={headline}>
+        <div className="visual-primary fallback-tile">
+          <span>{category}</span>
+        </div>
+        <div className="briefly-visual-mark" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
       <div className="visual-treatment" aria-hidden="true" />
       <div className="visual-label" aria-hidden="true">
@@ -1374,7 +1349,6 @@ function StoryCard({
     .filter((point) => point.trim())
     .slice(0, 3);
   const showDetails = mode === "detail" && (isOpen || generated);
-  const visualImages = getStoryVisualImages(story);
   const qnaPrompts =
     marketCode === "RS"
       ? [
@@ -1407,7 +1381,6 @@ function StoryCard({
       <StoryVisual
         category={story.category}
         headline={headline}
-        images={visualImages}
       >
         <span className="story-badge">
           {generated ? confidenceText(marketCode, story.confidenceStatus) : copy.sampleBadge}
