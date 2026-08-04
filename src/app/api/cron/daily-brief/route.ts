@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = readPublicOrigin(request);
   const ingestion = await callProtectedPost(
     `${origin}/api/ingestion/rss`,
     ingestionToken,
@@ -96,6 +96,14 @@ export async function GET(request: Request) {
   });
 }
 
+function readPublicOrigin(request: Request) {
+  const publicSiteUrl = process.env.PUBLIC_SITE_URL?.trim();
+
+  return publicSiteUrl
+    ? publicSiteUrl.replace(/\/$/, "")
+    : new URL(request.url).origin;
+}
+
 async function callProtectedPost(
   url: string,
   token: string,
@@ -105,6 +113,7 @@ async function callProtectedPost(
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
+      ...automationBypassHeaders(),
       ...(body ? { "content-type": "application/json" } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -128,4 +137,14 @@ async function readPayload(response: Response) {
   } catch {
     return { text };
   }
+}
+
+function automationBypassHeaders(): Record<string, string> {
+  const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+
+  return bypassSecret
+    ? {
+        "x-vercel-protection-bypass": bypassSecret,
+      }
+    : {};
 }
