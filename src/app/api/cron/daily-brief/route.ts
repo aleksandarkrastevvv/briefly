@@ -105,6 +105,7 @@ async function callProtectedPost(
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
+      ...automationBypassHeaders(),
       ...(body ? { "content-type": "application/json" } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -128,4 +129,14 @@ async function readPayload(response: Response) {
   } catch {
     return { text };
   }
+}
+
+function automationBypassHeaders(): Record<string, string> {
+  const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+
+  return bypassSecret
+    ? {
+        "x-vercel-protection-bypass": bypassSecret,
+      }
+    : {};
 }
