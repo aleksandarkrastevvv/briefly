@@ -1359,7 +1359,6 @@ function StoryCard({
 
         <div className="story-meta">
           <span>{formatTime(marketCode, story.updatedAt)}</span>
-          <span>{sourceSupport}</span>
           {"official" in story && story.official && <span>{copy.official}</span>}
         </div>
 
