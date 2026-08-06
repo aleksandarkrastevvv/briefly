@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   architectureNotes,
   getMarket,
@@ -1286,37 +1286,6 @@ function cleanPublicCardText(value: string) {
     .trim();
 }
 
-function StoryVisual({
-  category,
-  headline,
-  children,
-}: {
-  category: string;
-  headline: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="story-visual has-original-visual">
-      <div className="visual-composite" aria-label={headline}>
-        <div className="visual-primary fallback-tile">
-          <span>{category}</span>
-        </div>
-        <div className="briefly-visual-mark" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-      <div className="visual-treatment" aria-hidden="true" />
-      <div className="visual-label" aria-hidden="true">
-        {category}
-      </div>
-      {children}
-    </div>
-  );
-}
-
 function StoryCard({
   story,
   marketCode,
@@ -1378,14 +1347,12 @@ function StoryCard({
         )}
       </div>
 
-      <StoryVisual
-        category={story.category}
-        headline={headline}
-      >
+      <div className="story-editorial-strip" aria-label={headline}>
         <span className="story-badge">
           {generated ? confidenceText(marketCode, story.confidenceStatus) : copy.sampleBadge}
         </span>
-      </StoryVisual>
+        <span>{sourceSupport}</span>
+      </div>
 
       <div className="story-body">
         <h2 className="story-headline">{headline}</h2>
