@@ -1286,6 +1286,221 @@ function cleanPublicCardText(value: string) {
     .trim();
 }
 
+type StoryVisualKind =
+  | "river"
+  | "weather"
+  | "politics"
+  | "economy"
+  | "world"
+  | "health"
+  | "infrastructure"
+  | "default";
+
+function getStoryVisualKind(story: DisplayStory): StoryVisualKind {
+  const text = `${story.category} ${story.headline} ${story.description} ${story.keyPoints.join(
+    " ",
+  )}`.toLowerCase();
+
+  if (matchesAny(text, ["дунав", "река", "вод", "кораб", "пристан", "плаван", "язовир"])) {
+    return "river";
+  }
+
+  if (
+    matchesAny(text, [
+      "жега",
+      "горещ",
+      "температур",
+      "градус",
+      "буря",
+      "дъжд",
+      "сняг",
+      "време",
+      "прогноза",
+    ])
+  ) {
+    return "weather";
+  }
+
+  if (
+    matchesAny(text, [
+      "парламент",
+      "правител",
+      "минист",
+      "президент",
+      "закон",
+      "кабинет",
+      "съд",
+      "избор",
+      "община",
+    ])
+  ) {
+    return "politics";
+  }
+
+  if (
+    matchesAny(text, [
+      "иконом",
+      "бизнес",
+      "пазар",
+      "банка",
+      "инфлац",
+      "цена",
+      "бюджет",
+      "финанс",
+      "туризъм",
+    ])
+  ) {
+    return "economy";
+  }
+
+  if (
+    matchesAny(text, [
+      "свят",
+      "европа",
+      "нато",
+      "украйна",
+      "русия",
+      "сащ",
+      "вашингтон",
+      "токио",
+      "брюксел",
+      "балкани",
+    ])
+  ) {
+    return "world";
+  }
+
+  if (matchesAny(text, ["здрав", "болниц", "лекар", "вирус", "епидем", "нзок"])) {
+    return "health";
+  }
+
+  if (matchesAny(text, ["път", "магистрал", "желез", "транспорт", "мост", "тунел"])) {
+    return "infrastructure";
+  }
+
+  return "default";
+}
+
+function matchesAny(text: string, keywords: string[]) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function visualLabel(kind: StoryVisualKind, marketCode: MarketCode) {
+  if (marketCode === "RS") {
+    const labels: Record<StoryVisualKind, string> = {
+      river: "voda",
+      weather: "vreme",
+      politics: "institucije",
+      economy: "ekonomija",
+      world: "svet",
+      health: "zdravlje",
+      infrastructure: "putevi",
+      default: "danas",
+    };
+    return labels[kind];
+  }
+
+  const labels: Record<StoryVisualKind, string> = {
+    river: "вода",
+    weather: "време",
+    politics: "институции",
+    economy: "икономика",
+    world: "свят",
+    health: "здраве",
+    infrastructure: "пътища",
+    default: "днес",
+  };
+  return labels[kind];
+}
+
+function StoryOriginalVisual({
+  story,
+  headline,
+  marketCode,
+}: {
+  story: DisplayStory;
+  headline: string;
+  marketCode: MarketCode;
+}) {
+  const kind = getStoryVisualKind(story);
+
+  return (
+    <div className={`story-original-visual is-visual-${kind}`} aria-label={headline}>
+      <div className="story-original-visual-copy">
+        <span>{visualLabel(kind, marketCode)}</span>
+      </div>
+      <svg
+        className="story-original-svg"
+        viewBox="0 0 360 140"
+        role="img"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect className="visual-base" width="360" height="140" rx="0" />
+        <path className="visual-grid" d="M-10 130 L70 -10 M45 150 L125 -10 M100 150 L180 -10 M155 150 L235 -10 M210 150 L290 -10 M265 150 L345 -10" />
+        {kind === "river" && (
+          <>
+            <path className="visual-soft-fill" d="M0 94 C58 78 104 110 165 91 C225 72 267 84 360 52 L360 140 L0 140 Z" />
+            <path className="visual-ink" d="M28 92 C74 74 114 110 166 91 C219 72 269 83 332 60" />
+            <path className="visual-accent" d="M226 64 L278 64 L251 82 Z" />
+            <path className="visual-light" d="M66 113 L310 113" />
+          </>
+        )}
+        {kind === "weather" && (
+          <>
+            <circle className="visual-soft-fill" cx="86" cy="62" r="34" />
+            <path className="visual-ink" d="M86 18 L86 36 M86 88 L86 106 M42 62 L60 62 M112 62 L132 62 M55 31 L68 44 M55 94 L68 81 M118 31 L105 44 M118 94 L105 81" />
+            <path className="visual-accent" d="M195 98 C226 62 276 68 324 30" />
+            <path className="visual-light" d="M190 102 L324 102" />
+          </>
+        )}
+        {kind === "politics" && (
+          <>
+            <path className="visual-accent-fill" d="M66 43 L180 18 L294 43 Z" />
+            <path className="visual-ink" d="M82 50 L278 50 M98 50 L98 108 M145 50 L145 108 M192 50 L192 108 M239 50 L239 108 M76 108 L284 108" />
+            <path className="visual-light" d="M116 30 L244 30" />
+          </>
+        )}
+        {kind === "economy" && (
+          <>
+            <path className="visual-soft-fill" d="M36 108 L36 78 L76 78 L76 108 Z M112 108 L112 56 L152 56 L152 108 Z M188 108 L188 72 L228 72 L228 108 Z M264 108 L264 38 L304 38 L304 108 Z" />
+            <path className="visual-ink" d="M34 105 C74 88 105 92 142 66 C182 38 218 72 255 47 C278 32 299 30 324 24" />
+            <path className="visual-accent" d="M34 112 L326 112" />
+          </>
+        )}
+        {kind === "world" && (
+          <>
+            <circle className="visual-soft-fill" cx="180" cy="72" r="47" />
+            <path className="visual-ink" d="M133 72 H227 M180 25 C155 48 155 95 180 119 M180 25 C205 48 205 95 180 119 M145 42 C166 54 194 54 215 42 M145 102 C166 90 194 90 215 102" />
+            <path className="visual-accent" d="M42 106 C99 38 250 39 318 88" />
+          </>
+        )}
+        {kind === "health" && (
+          <>
+            <path className="visual-soft-fill" d="M153 30 H207 V61 H238 V99 H207 V130 H153 V99 H122 V61 H153 Z" />
+            <path className="visual-ink" d="M35 82 H103 L124 50 L153 108 L183 70 H230 L252 42 L278 82 H326" />
+            <path className="visual-accent" d="M153 30 H207 V61 H238" />
+          </>
+        )}
+        {kind === "infrastructure" && (
+          <>
+            <path className="visual-soft-fill" d="M0 100 C75 70 126 114 190 83 C254 52 294 76 360 42 L360 140 L0 140 Z" />
+            <path className="visual-ink" d="M28 111 C91 84 141 110 195 83 C246 58 286 69 332 47" />
+            <path className="visual-light" d="M92 96 L118 102 M176 88 L202 82 M262 64 L288 58" />
+          </>
+        )}
+        {kind === "default" && (
+          <>
+            <path className="visual-soft-fill" d="M50 42 H260 V90 H50 Z" />
+            <path className="visual-ink" d="M78 58 H238 M78 74 H210 M78 90 H250" />
+            <path className="visual-accent" d="M276 48 L316 88 M316 48 L276 88" />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
 function StoryCard({
   story,
   marketCode,
@@ -1353,6 +1568,8 @@ function StoryCard({
         </span>
         <span>{sourceSupport}</span>
       </div>
+
+      <StoryOriginalVisual story={story} headline={headline} marketCode={marketCode} />
 
       <div className="story-body">
         <h2 className="story-headline">{headline}</h2>
