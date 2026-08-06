@@ -1445,7 +1445,7 @@ legend {
 }
 
 .story-card.is-cover {
-  min-height: min(100svh, 780px);
+  min-height: 0;
   border: 1px solid var(--line);
 }
 
@@ -1518,6 +1518,147 @@ legend {
   white-space: nowrap;
 }
 
+.story-original-visual {
+  --visual-bg: #edf3ef;
+  --visual-bg-2: #d7ebe4;
+  --visual-ink: #0f625a;
+  --visual-accent: #cf3711;
+  --visual-soft: rgba(18, 128, 116, 0.15);
+  position: relative;
+  overflow: hidden;
+  height: clamp(92px, 24vw, 132px);
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
+    linear-gradient(135deg, var(--visual-bg), var(--visual-bg-2));
+}
+
+.story-original-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(247, 245, 239, 0.76), transparent 38%),
+    linear-gradient(180deg, transparent, rgba(21, 21, 21, 0.06));
+  pointer-events: none;
+}
+
+.story-original-visual-copy {
+  position: absolute;
+  z-index: 2;
+  left: var(--space-4);
+  top: var(--space-3);
+  color: rgba(21, 21, 21, 0.5);
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.story-original-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.visual-base {
+  fill: transparent;
+}
+
+.visual-grid {
+  fill: none;
+  stroke: rgba(21, 21, 21, 0.08);
+  stroke-width: 1;
+}
+
+.visual-ink,
+.visual-accent,
+.visual-light {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.visual-ink {
+  stroke: var(--visual-ink);
+  stroke-width: 6;
+}
+
+.visual-accent {
+  stroke: var(--visual-accent);
+  stroke-width: 5;
+}
+
+.visual-light {
+  stroke: rgba(255, 253, 250, 0.88);
+  stroke-width: 4;
+}
+
+.visual-soft-fill {
+  fill: var(--visual-soft);
+}
+
+.visual-accent-fill {
+  fill: color-mix(in srgb, var(--visual-accent) 22%, transparent);
+}
+
+.is-visual-river {
+  --visual-bg: #e7f1ef;
+  --visual-bg-2: #bfded9;
+  --visual-ink: #0d6660;
+  --visual-accent: #c64a23;
+  --visual-soft: rgba(13, 102, 96, 0.2);
+}
+
+.is-visual-weather {
+  --visual-bg: #f7ecd9;
+  --visual-bg-2: #f1c969;
+  --visual-ink: #9d3b1c;
+  --visual-accent: #0f625a;
+  --visual-soft: rgba(207, 55, 17, 0.2);
+}
+
+.is-visual-politics {
+  --visual-bg: #f2efe7;
+  --visual-bg-2: #d8e1ea;
+  --visual-ink: #24384a;
+  --visual-accent: #b43d2a;
+  --visual-soft: rgba(36, 56, 74, 0.14);
+}
+
+.is-visual-economy {
+  --visual-bg: #eef4ea;
+  --visual-bg-2: #d6e7cf;
+  --visual-ink: #17643b;
+  --visual-accent: #27506b;
+  --visual-soft: rgba(23, 100, 59, 0.16);
+}
+
+.is-visual-world {
+  --visual-bg: #e9edf5;
+  --visual-bg-2: #cbd7ee;
+  --visual-ink: #2c4a76;
+  --visual-accent: #c64a23;
+  --visual-soft: rgba(44, 74, 118, 0.16);
+}
+
+.is-visual-health {
+  --visual-bg: #f2eee9;
+  --visual-bg-2: #dceadf;
+  --visual-ink: #0f625a;
+  --visual-accent: #c23b31;
+  --visual-soft: rgba(194, 59, 49, 0.14);
+}
+
+.is-visual-infrastructure {
+  --visual-bg: #f0ece2;
+  --visual-bg-2: #d5d6cc;
+  --visual-ink: #3f4d4b;
+  --visual-accent: #b7512b;
+  --visual-soft: rgba(63, 77, 75, 0.16);
+}
+
 .story-body {
   display: grid;
   flex: 1;
@@ -1528,7 +1669,7 @@ legend {
 
 .story-card.is-cover .story-body {
   align-content: start;
-  grid-template-rows: auto auto auto auto 1fr auto;
+  grid-template-rows: none;
   min-height: 0;
 }
 
@@ -1653,7 +1794,8 @@ legend {
 }
 
 .read-cta {
-  align-self: end;
+  align-self: start;
+  margin-top: var(--space-1);
   min-height: 48px;
   width: 100%;
   border: 0;
